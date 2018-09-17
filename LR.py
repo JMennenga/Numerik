@@ -13,4 +13,7 @@ def LR(R):
                 L[j,i]=-a
                 for k in range(i+1,np.size(R)[1]):
                     R[j,k]=R[j,k]-a*R[i,k]
-    return(L,R)
+        return L,R
+    else:
+        print("Matrix nicht quadratisch")
+        return 0
