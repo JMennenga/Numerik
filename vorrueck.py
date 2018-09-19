@@ -1,7 +1,7 @@
 import numpy as np
 
 def vorrueck(L,R,b):
-    if np.size(L)==np.size(R) and np.size(b)=(np.size(L)[0],1) and np.size(L)[0]==np.size(L)[1]:
+    if np.size(L)==np.size(R) and np.size(b)==(np.size(L)[0],1) and np.size(L)[0]==np.size(L)[1]:
         y=np.zeros(np.size(b))
 <<<<<<< HEAD
 =======
