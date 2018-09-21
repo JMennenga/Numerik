@@ -13,9 +13,9 @@ def nablaEQ(func,h):
     schema=np.zeros(x.size[0],x.size[0])
     schema[0,0:2]=[-3,4,-1]
     schema[x.size[0]-1,x.size[0]-3:x.size[0]-1]=[1,-4,3]
-    for i in range(1,x.size[0]):
+    for i in range(1,x.size[0]-1):
         schema[i,i-1:i+1]=[-1,0,1]
-    dx=(1/2h)*np
+    dx=(1/2*h)*np.kron(schema,np.eye(schema.size))
 
 def testfunc(arg1,arg2):
     return arg1 + arg2
