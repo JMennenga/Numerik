@@ -2,11 +2,11 @@ import numpy as np
 import scipy.linalg as lin
 
 #Diskretisierung des Nabla-Operators bezueglich des Einheitsquadrats
-def nablaEQ(func,h):
+def nablamatrixEQ(h):
 
     x=np.arange(h,1,h)
     X,Y=np.meshgrid(x,x)
-    F=np.vectorize(func)(X,Y).reshape(:,1)
+    # F=np.vectorize(func)(X,Y).reshape(:,1)
     #F=np.array([func(x,y) for (x,y) in (X,Y)])
     #zu Testzwecken evtl hier returnen
     #return F
