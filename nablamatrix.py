@@ -17,10 +17,10 @@ def nablamatrixEQ(h):
         schema[i,i-1:i+1]=[-1,0,1]
     dx=(1/2*h)*np.kron(schema,np.eye(schema.size))
     dy=(1/2*h)*np.kron(np.eye(schema.size),schema)
-    DX=np.matmul(dx,F)
-    DY=np.matmul(dy,F)
-    return DX,DY
-def testfunc(arg1,arg2):
-    return arg1 + arg2
-
-print(nablaEQ(testfunc,0.1))
+    # DX=np.matmul(dx,F)
+    # DY=np.matmul(dy,F)
+    return dx,dy
+# def testfunc(arg1,arg2):
+#     return arg1 + arg2
+#
+# print(nablaEQ(testfunc,0.1))
