@@ -4,10 +4,8 @@ import glob
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse.linalg as splinalg
-import timeit
-import sys
 import matplotlib.colors as colors
-from stencil import *
+from stencil_orig import *
 
 kin_vis = 0.01
 h = 1
@@ -17,7 +15,7 @@ for image_path in paths:
     print(str(loop_count) + ': ' + image_path)
     loop_count += 1
 
-image_path = paths[2]                   #paths[int(input())]
+image_path = paths[0]                   #paths[int(input())]
 image = np.array(plt.imread(image_path))
 
 gridshape = image[:,:,1].shape
@@ -60,7 +58,7 @@ xx = np.linspace(0, 1, gridshape[0])
 yy = np.linspace(0, 1, gridshape[1])
 XX,YY = np.meshgrid(xx,yy)
 
-WW = 9*np.sin(6 * np.pi * (XX)) * np.sin(3 * np.pi * YY) * np.exp(-(XX)-(YY))
+WW = np.sin(6 * np.pi * (XX)) * np.sin(4 * np.pi * YY)
 ww = WW.reshape(gridlength)
 
 D1x = Ableitung(Stencil(1, [-1, 0, 1]), gridshape, 0)

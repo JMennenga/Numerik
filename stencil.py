@@ -30,6 +30,23 @@ class Stencil:
 class Ableitung:
 
     def __init__(self, shape, orientation, ablOrdnung = 1,  offset =0, maxOrdnung = 2, rand = []):
+        """
+            Patameter:
+                shape (Tuple):
+                    Gridshape this will affect
+                orientation (int):
+                    0 primary
+                    1 secondary
+                ablOrdnung:
+                    Order of differentiation
+                offset (int/2):
+                    Offset of stencil-center compared to point computed
+                maxOrdnung:
+                    Highest order of Approximation used
+                rand (bool numpy.ndarray):
+                    true for boundary Points
+        """
+
 
         self.gridshape = shape
         self.sidelength = shape[0]*shape[1]
@@ -38,17 +55,18 @@ class Ableitung:
             rand_dist = np.zeros(shape)
             for index, value in np.ndenumerate(rand):
                 i = 0
-                while not 1 in (rand[index[0]-i,index[1]],
-                                rand[index[0]+i,index[1]],
-                                rand[index[0],index[1]-i],
-                                rand[index[0],index[1]+i]):
+                while True:
+                    if orientation: ls = (rand[index[0]-i,index[1]], rand[index[0]+i,index[1]])
+                    else: ls = (rand[index[0],index[1]-i], rand[index[0],index[1]+i])
+                    if 1 in ls:
+                        break
                     i += 1
 
                 rand_dist[index] = i
 
             plt.imshow(rand_dist)
             plt.show()
-            if (offset%1):
+            if not (offset%1):
                 min = 2
             else:
                 min = 1
@@ -57,17 +75,19 @@ class Ableitung:
 
             self.matrix = sparse.lil_matrix((self.sidelength,self.sidelength))
             n = 1
-            for i in range(min,maxOrdnung-1,2):
-                a = np.ceil(np.arange(i+1)- np.floor((i+1)/2) + offset)
-                s = Stencil(ablOrdnung, a)
-                print(a)
-                self.matrix = self.matrix + (sparse.diags(rand_dist == np.ceil(n+abs(offset)), dtype = bool) * self.sten2mat(s, orientation))
-                n += 1
+            for i in range(min,maxOrdnung+1,2):
 
-            a = np.ceil(np.arange(maxOrdnung+1)- np.floor((maxOrdnung+1)/2) + offset)
-            s = Stencil(ablOrdnung, a)
-            print(a)
-            self.matrix = self.matrix + (sparse.diags(rand_dist >= n, dtype = bool) * self.sten2mat(s, orientation))
+                a = np.ceil(np.arange(i+1)- ((i+1)/2) + offset)
+                print('a :' + str(a))
+                s = Stencil(ablOrdnung, a)
+                print('s :' + str(s.coefficients))
+                if n == 1:
+                    self.matrix = self.matrix + (sparse.diags(rand_dist <= n, dtype = bool) * self.sten2mat(s, orientation))
+                elif n >= maxOrdnung:
+                    self.matrix = self.matrix + (sparse.diags(rand_dist >= n, dtype = bool) * self.sten2mat(s, orientation))
+                else:
+                    self.matrix = self.matrix + (sparse.diags(rand_dist == n, dtype = bool) * self.sten2mat(s, orientation))
+                n += 1
 
 
         else:

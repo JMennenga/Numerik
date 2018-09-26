@@ -12,7 +12,7 @@ b_rand[0,:] = 1
 b_rand[9,:] = 1
 b_rand[:,0] = 1
 b_rand[:,9] = 1
-a = Ableitung((10,10),0,1,0.5,7,b_rand)
+a = Ableitung((10,10),1,1,0,10,b_rand)
 
 plt.imshow(a.matrix.todense())
 plt.colorbar()
