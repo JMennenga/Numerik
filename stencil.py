@@ -5,6 +5,7 @@ import copy
 
 import matplotlib.pyplot as plt
 
+
 class Stencil:
     def __init__(self, ord, s):
         self.ordnung = ord
@@ -27,9 +28,10 @@ class Stencil:
     def len(self):
         return self.length
 
+
 class Ableitung:
 
-    def __init__(self, shape, orientation, ablOrdnung = 1,  offset =0, maxOrdnung = 2, rand = []):
+    def __init__(self, shape, orientation, ablOrdnung=1,  offset=0, maxOrdnung=10, rand=[]):
         """
             Patameter:
                 shape (Tuple):
@@ -47,7 +49,6 @@ class Ableitung:
                     true for boundary Points
         """
 
-
         self.gridshape = shape
         self.sidelength = shape[0]*shape[1]
 
@@ -56,55 +57,56 @@ class Ableitung:
             for index, value in np.ndenumerate(rand):
                 i = 0
                 while True:
-                    if orientation: ls = (rand[index[0]-i,index[1]], rand[index[0]+i,index[1]])
-                    else: ls = (rand[index[0],index[1]-i], rand[index[0],index[1]+i])
+                    if orientation:
+                        ls = (rand[index[0]-i, index[1]], rand[index[0]+i, index[1]])
+                    else:
+                        ls = (rand[index[0], index[1]-i], rand[index[0], index[1]+i])
                     if 1 in ls:
                         break
                     i += 1
 
                 rand_dist[index] = i
 
-            plt.imshow(rand_dist)
-            plt.show()
-            if not (offset%1):
+            if not (offset % 1):
                 min = 2
             else:
                 min = 1
 
             rand_dist = rand_dist.reshape(self.sidelength)
 
-            self.matrix = sparse.lil_matrix((self.sidelength,self.sidelength))
+            self.matrix = sparse.lil_matrix((self.sidelength, self.sidelength))
             n = 1
-            for i in range(min,maxOrdnung+1,2):
+            for i in range(min, maxOrdnung+1, 2):
 
-                a = np.ceil(np.arange(i+1)- ((i+1)/2) + offset)
-                print('a :' + str(a))
+                a = np.ceil(np.arange(i+1) - ((i+1)/2) + offset)
                 s = Stencil(ablOrdnung, a)
-                print('s :' + str(s.coefficients))
                 if n == 1:
-                    self.matrix = self.matrix + (sparse.diags(rand_dist <= n, dtype = bool) * self.sten2mat(s, orientation))
+                    self.matrix = self.matrix + \
+                        (sparse.diags(rand_dist <= n, dtype=bool) * self.sten2mat(s, orientation))
                 elif n >= maxOrdnung:
-                    self.matrix = self.matrix + (sparse.diags(rand_dist >= n, dtype = bool) * self.sten2mat(s, orientation))
+                    self.matrix = self.matrix + \
+                        (sparse.diags(rand_dist >= n, dtype=bool) * self.sten2mat(s, orientation))
                 else:
-                    self.matrix = self.matrix + (sparse.diags(rand_dist == n, dtype = bool) * self.sten2mat(s, orientation))
+                    self.matrix = self.matrix + \
+                        (sparse.diags(rand_dist == n, dtype=bool) * self.sten2mat(s, orientation))
                 n += 1
-
 
         else:
             self.gridshape = shape
             self.sidelength = shape[0]*shape[1]
-            if (offset%0):
+            if (offset % 0):
                 maxOrdnung += 1
-            stencil = Stencil(ablOrdnung, np.ceil(np.arange(maxOrdnung)- np.floor(maxOrdnung/2) + offset))
-            self.matrix = self.sten2mat(stencil, Orientation)
-            #self.matrix.eliminate_zeros()
+            stencil = Stencil(ablOrdnung, np.ceil(
+                np.arange(maxOrdnung) - np.floor(maxOrdnung/2) + offset))
+            self.matrix = self.sten2mat(stencil, orientation)
+            # self.matrix.eliminate_zeros()
 
     def copy(self):
         return copy.deepcopy(self)
 
     def sten2mat(self, stencil, Orientation, *args):
 
-        matrix = sparse.lil_matrix((self.sidelength,self.sidelength))
+        matrix = sparse.lil_matrix((self.sidelength, self.sidelength))
 
         if (Orientation == 0):
             a = stencil.coefficients * np.ones((stencil.len(),  self.gridshape[0]))
@@ -117,7 +119,7 @@ class Ableitung:
 
         return matrix
 
-    def randmod(self, b_rand, modifytype = 'r'):
+    def randmod(self, b_rand, modifytype='r'):
         #
         # b_rand (m,n) or (m*n) numpy logical array
         # modifytype can be either
@@ -129,18 +131,18 @@ class Ableitung:
         b_rand = b_rand.reshape(self.sidelength)
         true_sum = np.sum(b_rand)
 
-        if modifytype in ['row','r']:
-            self.matrix[b_rand,:] = np.zeros((true_sum,self.sidelength))
+        if modifytype in ['row', 'r']:
+            self.matrix[b_rand, :] = np.zeros((true_sum, self.sidelength))
 
-        if modifytype in ['column','c']:
-            self.matrix[:,b_rand] = np.zeros((self.sidelength,true_sum))
+        if modifytype in ['column', 'c']:
+            self.matrix[:, b_rand] = np.zeros((self.sidelength, true_sum))
 
-        if modifytype in ['diag_one','d1']:
+        if modifytype in ['diag_one', 'd1']:
             d = self.matrix.diagonal()
-            d[b_rand] = 1           #np.ones(true_sum)
+            d[b_rand] = 1  # np.ones(true_sum)
             self.matrix.setdiag(d)
 
-        #self.matrix.eliminate_zeros()
+        # self.matrix.eliminate_zeros()
 
     def todense(self):
         return self.matrix.todense()
