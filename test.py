@@ -114,8 +114,7 @@ Lap_rand = sparse.csr_matrix((gridlength, gridlength))
 Lap_rand = (sparse.diags(dir_rand == 0x1, dtype=bool)*b1[0]  # S-Rand
             + sparse.diags(dir_rand == 0x2, dtype=bool)*b1[2]  # N-Rand
             + sparse.diags(dir_rand == 0x4, dtype=bool)*b1[1]  # O-Rand
-            + sparse.diags(dir_rand == 0x8, dtype=bool) * \
-            b1[3]  # W-Rand  (heh SNOW...)
+            + sparse.diags(dir_rand == 0x8, dtype=bool) * b1[3]  # W-Rand  (heh SNOW...)
 
             + sparse.diags(dir_rand == 0x5, dtype=bool)*b2[0]  # SO
             + sparse.diags(dir_rand == 0x6, dtype=bool)*b2[1]  # NO
@@ -147,78 +146,89 @@ fig = plt.figure()
 
 # expliziter Euler
 
-loop_count = 0
-while (loop_count <= 1000):
-    print(loop_count)
-    ww[b_rand] = 0
-    psi_innen = splinalg.spsolve(Lap1.matrix, (ww - Lap0.matrix * psi_rand))
-
-    u = D1y.matrix * (psi_rand + psi_innen)
-    u[np.array(dir_rand & 0x3, dtype=bool)
-      ] = u_rand[np.array(dir_rand & 0x3, dtype=bool)]
-    v = -D1x.matrix * (psi_rand + psi_innen)
-    v[np.array(dir_rand & 0xC, dtype=bool)
-      ] = v_rand[np.array(dir_rand & 0xC, dtype=bool)]
-
-    ww_rand = Lap_rand * (psi_rand + psi_innen) + \
-        Neumann_Korrekturx * u + Neumann_Korrekturx * v
-
-    ax = u > 0
-    ay = v > 0
-
-    rhs = -((np.multiply(ax, D1w.dot(u * (ww + ww_rand))))
-            + (np.multiply(np.logical_not(ax), D1o.dot(u * (ww + ww_rand))))
-            + (np.multiply(ay, D1s.dot(v * (ww + ww_rand))))
-            + (np.multiply(np.logical_not(ay), D1n.dot(v * (ww + ww_rand))))
-
-            - kin_vis * (Lap0.matrix * (ww + ww_rand))
-            )
-    CFL = 0.8
-    dt = h * CFL/max(np.abs(np.append(u, v)))
-
-    if loop_count == 0:
-        im = plt.imshow((ww + ww_rand).reshape(gridshape))
-        cbar = plt.colorbar()
-    else:
-
-        norm = colors.Normalize(np.min(ww), np.max(ww))
-
-        im.set_data((ww).reshape(gridshape))
-        im.set_norm(norm)
-    plt.pause(1)
-
-    ww += rhs*dt
-
-    loop_count += 1
+# loop_count = 0
+# while (loop_count <= 1000):
+#     print(loop_count)
+#     ww[b_rand] = 0
+#     psi_innen = splinalg.spsolve(Lap1.matrix, (ww - Lap0.matrix * psi_rand))
+#
+#     u = D1y.matrix * (psi_rand + psi_innen)
+#     u[np.array(dir_rand & 0x3, dtype=bool)
+#       ] = u_rand[np.array(dir_rand & 0x3, dtype=bool)]
+#     v = -D1x.matrix * (psi_rand + psi_innen)
+#     v[np.array(dir_rand & 0xC, dtype=bool)
+#       ] = v_rand[np.array(dir_rand & 0xC, dtype=bool)]
+#
+#     ww_rand = Lap_rand * (psi_rand + psi_innen) + \
+#         Neumann_Korrekturx * u + Neumann_Korrekturx * v
+#
+#     ax = u > 0
+#     ay = v > 0
+#
+#     rhs = -((np.multiply(ax, D1w.dot(u * (ww + ww_rand))))
+#             + (np.multiply(np.logical_not(ax), D1o.dot(u * (ww + ww_rand))))
+#             + (np.multiply(ay, D1s.dot(v * (ww + ww_rand))))
+#             + (np.multiply(np.logical_not(ay), D1n.dot(v * (ww + ww_rand))))
+#
+#             - kin_vis * (Lap0.matrix * (ww + ww_rand))
+#             )
+#     CFL = 0.8
+#     dt = h * CFL/max(np.abs(np.append(u, v)))
+#
+#     if loop_count == 0:
+#         im = plt.imshow((ww + ww_rand).reshape(gridshape))
+#         cbar = plt.colorbar()
+#     else:
+#
+#         norm = colors.Normalize(np.min(ww), np.max(ww))
+#
+#         im.set_data((ww).reshape(gridshape))
+#         im.set_norm(norm)
+#     plt.pause(0.001)
+#
+#     ww += rhs*dt
+#
+#     loop_count += 1
 # rk4
 loop_count = 0
+CFL = 0.8
+
 while (loop_count <= 1000):
-    print(loop_count)
-    ww[b_rand] = 0
-    psi_innen = splinalg.spsolve(Lap1.matrix, (ww - Lap0.matrix * psi_rand))
-
-    u = D1y.matrix * (psi_rand + psi_innen)
-    u[np.array(dir_rand & 0x3, dtype=bool)
-      ] = u_rand[np.array(dir_rand & 0x3, dtype=bool)]
-    v = -D1x.matrix * (psi_rand + psi_innen)
-    v[np.array(dir_rand & 0xC, dtype=bool)
-      ] = v_rand[np.array(dir_rand & 0xC, dtype=bool)]
-
-    ww_rand = Lap_rand * (psi_rand + psi_innen) + \
-        Neumann_Korrekturx * u + Neumann_Korrekturx * v
-
-    ax = u > 0
-    ay = v > 0
-
-    rhs = -((np.multiply(ax, D1w.dot(u * (ww + ww_rand))))
-            + (np.multiply(np.logical_not(ax), D1o.dot(u * (ww + ww_rand))))
-            + (np.multiply(ay, D1s.dot(v * (ww + ww_rand))))
-            + (np.multiply(np.logical_not(ay), D1n.dot(v * (ww + ww_rand))))
-
-            - kin_vis * (Lap0.matrix * (ww + ww_rand))
-            )
-    CFL = 0.8
     dt = h * CFL/max(np.abs(np.append(u, v)))
+    for i in range(4):
+
+        if i == 1:
+            w = ww + rhs*dt/2
+        if i == 2:
+            w = ww + rhs*dt/2
+        if i == 3:
+            w = ww + rhs*dt
+
+        ww[b_rand] = 0
+        psi_innen = splinalg.spsolve(Lap1.matrix, (ww - Lap0.matrix * psi_rand))
+
+        u = D1y.matrix * (psi_rand + psi_innen)
+        u[np.array(dir_rand & 0x3, dtype=bool)
+          ] = u_rand[np.array(dir_rand & 0x3, dtype=bool)]
+        v = -D1x.matrix * (psi_rand + psi_innen)
+        v[np.array(dir_rand & 0xC, dtype=bool)
+          ] = v_rand[np.array(dir_rand & 0xC, dtype=bool)]
+
+        ww_rand = Lap_rand * (psi_rand + psi_innen) + \
+            Neumann_Korrekturx * u + Neumann_Korrekturx * v
+
+        ax = u > 0
+        ay = v > 0
+
+        rhs = -((np.multiply(ax, D1w.dot(u * (ww + ww_rand))))
+                + (np.multiply(np.logical_not(ax), D1o.dot(u * (ww + ww_rand))))
+                + (np.multiply(ay, D1s.dot(v * (ww + ww_rand))))
+                + (np.multiply(np.logical_not(ay), D1n.dot(v * (ww + ww_rand))))
+
+                - kin_vis * (Lap0.matrix * (ww + ww_rand))
+                )
+        CFL = 0.8
+        dt = h * CFL/max(np.abs(np.append(u, v)))
 
     if loop_count == 0:
         im = plt.imshow((ww + ww_rand).reshape(gridshape))
@@ -230,8 +240,6 @@ while (loop_count <= 1000):
         im.set_data((ww).reshape(gridshape))
         im.set_norm(norm)
     plt.pause(1)
-
-    ww += rhs*dt
 
     loop_count += 1
 
