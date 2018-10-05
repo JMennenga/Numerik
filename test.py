@@ -114,8 +114,7 @@ Lap_rand = sparse.csr_matrix((gridlength, gridlength))
 Lap_rand = (sparse.diags(dir_rand == 0x1, dtype=bool)*b1[0]  # S-Rand
             + sparse.diags(dir_rand == 0x2, dtype=bool)*b1[2]  # N-Rand
             + sparse.diags(dir_rand == 0x4, dtype=bool)*b1[1]  # O-Rand
-            + sparse.diags(dir_rand == 0x8, dtype=bool) * \
-            b1[3]  # W-Rand  (heh SNOW...)
+            + sparse.diags(dir_rand == 0x8, dtype=bool) * b1[3]  # W-Rand  (heh SNOW...)
 
             + sparse.diags(dir_rand == 0x5, dtype=bool)*b2[0]  # SO
             + sparse.diags(dir_rand == 0x6, dtype=bool)*b2[1]  # NO
@@ -185,7 +184,7 @@ while (loop_count <= 1000):
 
         im.set_data((ww).reshape(gridshape))
         im.set_norm(norm)
-    plt.pause(1)
+    plt.pause(0.001)
 
     ww += rhs*dt
 
