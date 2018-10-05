@@ -17,7 +17,7 @@ for image_path in paths:
     print(str(loop_count) + ': ' + image_path)
     loop_count += 1
 
-image_path = paths[0]  # paths[int(input())]
+image_path = paths[2]  # paths[int(input())]
 image = np.array(plt.imread(image_path))
 
 gridshape = image[:, :, 1].shape
@@ -61,18 +61,23 @@ xx = np.linspace(0, 1, gridshape[0])
 yy = np.linspace(0, 1, gridshape[1])
 XX, YY = np.meshgrid(xx, yy)
 
-WW = np.sin(6 * np.pi * (XX)) * np.sin(4 * np.pi * YY)
+WW = np.sin(0 * np.pi * (XX)) * np.sin(4 * np.pi * YY)
 ww = WW.reshape(gridlength)
-
+print('1')
 D1x = Ableitung(gridshape, 0, 1, 0, rand=b_rand)
+print('2')
 D1y = Ableitung(gridshape, 1, 1, 0, rand=b_rand)
-
+print('3')
 D1o = Ableitung(gridshape, 0, 1,  0.5, rand=b_rand)
+print('4')
 D1w = Ableitung(gridshape, 0, 1, -0.5, rand=b_rand)
+print('5')
 D1s = Ableitung(gridshape, 0, 1,  0.5, rand=b_rand)
+print('6')
 D1n = Ableitung(gridshape, 1, 1, -0.5, rand=b_rand)
-
+print('7')
 Lap0 = Ableitung(gridshape, 0, 2, 0, rand=b_rand)
+print('8')
 Lap0 = Lap0.add(Ableitung(gridshape, 1, 2, 0, rand=b_rand))
 
 Lap0.randmod(b_rand, 'r')
@@ -133,9 +138,14 @@ Lap0.final()
 Lap1.final()
 
 
+plt.imshow(Lap1.matrix.todense())
+plt.show()
 # LLLLLLOOOOOOOOOOOOOPPPPPPPP
 plt.ion()
 fig = plt.figure()
+
+
+# expliziter Euler
 
 loop_count = 0
 while (loop_count <= 1000):
@@ -175,11 +185,56 @@ while (loop_count <= 1000):
 
         im.set_data((ww).reshape(gridshape))
         im.set_norm(norm)
-    plt.pause(0.001)
+    plt.pause(1)
 
     ww += rhs*dt
 
     loop_count += 1
+# rk4
+loop_count = 0
+while (loop_count <= 1000):
+    print(loop_count)
+    ww[b_rand] = 0
+    psi_innen = splinalg.spsolve(Lap1.matrix, (ww - Lap0.matrix * psi_rand))
+
+    u = D1y.matrix * (psi_rand + psi_innen)
+    u[np.array(dir_rand & 0x3, dtype=bool)
+      ] = u_rand[np.array(dir_rand & 0x3, dtype=bool)]
+    v = -D1x.matrix * (psi_rand + psi_innen)
+    v[np.array(dir_rand & 0xC, dtype=bool)
+      ] = v_rand[np.array(dir_rand & 0xC, dtype=bool)]
+
+    ww_rand = Lap_rand * (psi_rand + psi_innen) + \
+        Neumann_Korrekturx * u + Neumann_Korrekturx * v
+
+    ax = u > 0
+    ay = v > 0
+
+    rhs = -((np.multiply(ax, D1w.dot(u * (ww + ww_rand))))
+            + (np.multiply(np.logical_not(ax), D1o.dot(u * (ww + ww_rand))))
+            + (np.multiply(ay, D1s.dot(v * (ww + ww_rand))))
+            + (np.multiply(np.logical_not(ay), D1n.dot(v * (ww + ww_rand))))
+
+            - kin_vis * (Lap0.matrix * (ww + ww_rand))
+            )
+    CFL = 0.8
+    dt = h * CFL/max(np.abs(np.append(u, v)))
+
+    if loop_count == 0:
+        im = plt.imshow((ww + ww_rand).reshape(gridshape))
+        cbar = plt.colorbar()
+    else:
+
+        norm = colors.Normalize(np.min(ww), np.max(ww))
+
+        im.set_data((ww).reshape(gridshape))
+        im.set_norm(norm)
+    plt.pause(1)
+
+    ww += rhs*dt
+
+    loop_count += 1
+
 # print(timeit.timeit(lambda: splinalg.spsolve(Lap1.matrix, ww),number = 10000))
 
 # plt.imshow((psi_innen+psi_rand).reshape(gridshape))
