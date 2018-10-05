@@ -72,18 +72,21 @@ class Ableitung:
             else:
                 min = 1
 
+            # plt.imshow(rand_dist)
+            # plt.show()
             rand_dist = rand_dist.reshape(self.sidelength)
 
             self.matrix = sparse.lil_matrix((self.sidelength, self.sidelength))
             n = 1
-            for i in range(min, maxOrdnung+1, 2):
+            k = range(min, maxOrdnung+min, 2)
+            for i in k:
 
                 a = np.ceil(np.arange(i+1) - ((i+1)/2) + offset)
                 s = Stencil(ablOrdnung, a)
                 if n == 1:
                     self.matrix = self.matrix + \
                         (sparse.diags(rand_dist <= n, dtype=bool) * self.sten2mat(s, orientation))
-                elif n >= maxOrdnung:
+                elif i == k[-1]:
                     self.matrix = self.matrix + \
                         (sparse.diags(rand_dist >= n, dtype=bool) * self.sten2mat(s, orientation))
                 else:
