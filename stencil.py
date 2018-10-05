@@ -72,10 +72,13 @@ class Ableitung:
             else:
                 min = 1
 
+            # plt.imshow(rand_dist)
+            # plt.show()
             rand_dist = rand_dist.reshape(self.sidelength)
 
             self.matrix = sparse.lil_matrix((self.sidelength, self.sidelength))
             n = 1
+
             iter = list(range(min, maxOrdnung+1, 2))
             for i in iter:
 
