@@ -145,6 +145,7 @@ fig = plt.figure()
 
 
 # expliziter Euler
+<<<<<<< HEAD
 
 # loop_count = 0
 # while (loop_count <= 1000):
@@ -190,6 +191,8 @@ fig = plt.figure()
 #
 #     loop_count += 1
 # rk4
+=======
+>>>>>>> fd07ac801b2149ce6ee18c23f6cd30fe0a3e3eb2
 loop_count = 0
 CFL = 0.8
 
@@ -207,12 +210,23 @@ while (loop_count <= 1000):
         ww[b_rand] = 0
         psi_innen = splinalg.spsolve(Lap1.matrix, (ww - Lap0.matrix * psi_rand))
 
+<<<<<<< HEAD
         u = D1y.matrix * (psi_rand + psi_innen)
         u[np.array(dir_rand & 0x3, dtype=bool)
           ] = u_rand[np.array(dir_rand & 0x3, dtype=bool)]
         v = -D1x.matrix * (psi_rand + psi_innen)
         v[np.array(dir_rand & 0xC, dtype=bool)
           ] = v_rand[np.array(dir_rand & 0xC, dtype=bool)]
+=======
+    loop_count += 1
+# rk4
+
+loop_count = 0
+while (loop_count <= 1000):
+    print(loop_count)
+    ww[b_rand] = 0
+    psi_innen = splinalg.spsolve(Lap1.matrix, (ww - Lap0.matrix * psi_rand))
+>>>>>>> fd07ac801b2149ce6ee18c23f6cd30fe0a3e3eb2
 
         ww_rand = Lap_rand * (psi_rand + psi_innen) + \
             Neumann_Korrekturx * u + Neumann_Korrekturx * v
@@ -242,6 +256,7 @@ while (loop_count <= 1000):
     plt.pause(1)
 
     loop_count += 1
+
 
 # print(timeit.timeit(lambda: splinalg.spsolve(Lap1.matrix, ww),number = 10000))
 
