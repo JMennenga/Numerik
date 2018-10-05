@@ -114,8 +114,7 @@ Lap_rand = sparse.csr_matrix((gridlength, gridlength))
 Lap_rand = (sparse.diags(dir_rand == 0x1, dtype=bool)*b1[0]  # S-Rand
             + sparse.diags(dir_rand == 0x2, dtype=bool)*b1[2]  # N-Rand
             + sparse.diags(dir_rand == 0x4, dtype=bool)*b1[1]  # O-Rand
-            + sparse.diags(dir_rand == 0x8, dtype=bool) * \
-            b1[3]  # W-Rand  (heh SNOW...)
+            + sparse.diags(dir_rand == 0x8, dtype=bool) * b1[3]  # W-Rand  (heh SNOW...)
 
             + sparse.diags(dir_rand == 0x5, dtype=bool)*b2[0]  # SO
             + sparse.diags(dir_rand == 0x6, dtype=bool)*b2[1]  # NO
@@ -146,7 +145,6 @@ fig = plt.figure()
 
 
 # expliziter Euler
-
 loop_count = 0
 while (loop_count <= 1000):
     print(loop_count)
@@ -191,6 +189,7 @@ while (loop_count <= 1000):
 
     loop_count += 1
 # rk4
+
 loop_count = 0
 while (loop_count <= 1000):
     print(loop_count)
@@ -234,6 +233,7 @@ while (loop_count <= 1000):
     ww += rhs*dt
 
     loop_count += 1
+
 
 # print(timeit.timeit(lambda: splinalg.spsolve(Lap1.matrix, ww),number = 10000))
 

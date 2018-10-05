@@ -6,22 +6,13 @@ from stencil import Stencil, Ableitung
 # i = 4
 # a = np.ceil(np.arange(i)- np.floor(i/2)-0.5)
 # print(a)
-
-<<<<<<< HEAD
 b_rand = np.zeros((10,10), dtype=bool)
 b_rand[0,:] = 1
 b_rand[9,:] = 1
 b_rand[:,0] = 1
 b_rand[:,9] = 1
 a = Ableitung((10,10),0,1,0,10,b_rand)
-=======
-b_rand = np.zeros((100, 100), dtype=bool)
-b_rand[0, :] = 1
-b_rand[99, :] = 1
-b_rand[:, 0] = 1
-b_rand[:, 99] = 1
-a = Ableitung((100, 100), 0, 1, 0, 9, b_rand)
->>>>>>> origin/marc
+
 
 plt.imshow(a.matrix.todense())
 plt.colorbar()
