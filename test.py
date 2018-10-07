@@ -122,7 +122,7 @@ D1y = Ableitung(gridshape, 1, 1, 0, 2, rand=b_rand)
 
 D1o = Ableitung(gridshape, 0, 1,  0.5, 1, rand=b_rand)
 D1w = Ableitung(gridshape, 0, 1, -0.5, 1, rand=b_rand)
-D1s = Ableitung(gridshape, 0, 1,  0.5, 1, rand=b_rand)
+D1s = Ableitung(gridshape, 1, 1,  0.5, 1, rand=b_rand)
 D1n = Ableitung(gridshape, 1, 1, -0.5, 1, rand=b_rand)
 
 Lap0 = Ableitung(gridshape, 0, 2, 0, 2, rand=b_rand)
