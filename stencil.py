@@ -52,15 +52,15 @@ class Ableitung:
         self.gridshape = shape
         self.sidelength = shape[0]*shape[1]
 
-        if rand != []:
+        if rand.any():
             rand_dist = np.zeros(shape)
             for index, value in np.ndenumerate(rand):
                 i = 0
                 while True:
                     if orientation:
-                        ls = (rand[index[0]-i, index[1]], rand[index[0]+i, index[1]])
+                        ls = [rand[index[0]-i, index[1]], rand[index[0]+i, index[1]]]
                     else:
-                        ls = (rand[index[0], index[1]-i], rand[index[0], index[1]+i])
+                        ls = [rand[index[0], index[1]-i], rand[index[0], index[1]+i]]
                     if 1 in ls:
                         break
                     i += 1
@@ -80,28 +80,38 @@ class Ableitung:
             n = 1
 
             iter = list(range(min, maxOrdnung+1, 2))
-            for i in iter:
 
-                a = np.ceil(np.arange(i+1) - ((i+1)/2) + offset)
+            if len(iter) > 1:
+                for i in iter:
+
+                    a = np.ceil(np.arange(i+1) - ((i+1)/2) + offset)
+                    s = Stencil(ablOrdnung, a)
+                    if n == 1:
+                        self.matrix = self.matrix + \
+                            (sparse.diags(rand_dist <= n, dtype=bool) * self.sten2mat(s, orientation))
+
+                    elif i == iter[-1]:
+                        self.matrix = self.matrix + \
+                            (sparse.diags(rand_dist >= n, dtype=bool) * self.sten2mat(s, orientation))
+
+                    else:
+                        self.matrix = self.matrix + \
+                            (sparse.diags(rand_dist == n, dtype=bool) * self.sten2mat(s, orientation))
+
+                    n += 1
+            else:
+                a = np.ceil(np.arange(iter[0]+1) - ((iter[0]+1)/2) + offset)
                 s = Stencil(ablOrdnung, a)
-                if n == 1:
-                    self.matrix = self.matrix + \
-                        (sparse.diags(rand_dist <= n, dtype=bool) * self.sten2mat(s, orientation))
-                elif i == iter[-1]:
-                    self.matrix = self.matrix + \
-                        (sparse.diags(rand_dist >= n, dtype=bool) * self.sten2mat(s, orientation))
-                    print('a')
-                else:
-                    self.matrix = self.matrix + \
-                        (sparse.diags(rand_dist == n, dtype=bool) * self.sten2mat(s, orientation))
-                    print('b')
-                n += 1
+                self.matrix = self.matrix + \
+                    (self.sten2mat(s, orientation))
 
         else:
             self.gridshape = shape
             self.sidelength = shape[0]*shape[1]
-            if (offset % 0):
+            print(maxOrdnung)
+            if not (offset % 1):
                 maxOrdnung += 1
+            print(maxOrdnung)
             stencil = Stencil(ablOrdnung, np.ceil(
                 np.arange(maxOrdnung) - np.floor(maxOrdnung/2) + offset))
             self.matrix = self.sten2mat(stencil, orientation)
@@ -165,3 +175,15 @@ class Ableitung:
 
     def dot(self, other):
         return self.matrix.dot(other)
+
+
+if __name__ == '__main__':
+
+    b_rand = np.zeros((20,20), dtype=bool)
+    b_rand[0,:] = 1
+    b_rand[19,:] = 1
+    b_rand[:,0] = 1
+    b_rand[:,19] = 1
+    A = Ableitung((20, 20), 0, 1, -0.5, 5, b_rand)
+    plt.imshow(A.matrix.todense())
+    plt.show()

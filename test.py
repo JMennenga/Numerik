@@ -7,17 +7,17 @@ import scipy.sparse as sparse
 import scipy.sparse.linalg as splinalg
 import matplotlib.colors as colors
 from stencil import Ableitung
+from stencil_orig import Ableitung_orig, Stencil
 
 
-def rhs(ww, t):
-    ww[b_rand] = 0
-    psi_innen = splinalg.spsolve(Lap1.matrix, (ww - Lap0.matrix * psi_rand))
+def rhs(w, t):
+    w[b_rand] = 0
+    psi_innen = splinalg.spsolve(Lap1.matrix, (w - Lap0.matrix * psi_rand))
 
     u = D1y.matrix * (psi_rand + psi_innen)
-    plt.imshow(D1y.matrix.todense())
-    plt.show()
     u[np.array(dir_rand & 0x3, dtype=bool)
       ] = u_rand[np.array(dir_rand & 0x3, dtype=bool)]
+
     v = -D1x.matrix * (psi_rand + psi_innen)
     v[np.array(dir_rand & 0xC, dtype=bool)
       ] = v_rand[np.array(dir_rand & 0xC, dtype=bool)]
@@ -28,14 +28,14 @@ def rhs(ww, t):
     ax = u > 0
     ay = v > 0
 
-    rhs = -((np.multiply(ax, D1w.dot(u * (ww + ww_rand))))
-            + (np.multiply(np.logical_not(ax), D1o.dot(u * (ww + ww_rand))))
-            + (np.multiply(ay, D1s.dot(v * (ww + ww_rand))))
-            + (np.multiply(np.logical_not(ay), D1n.dot(v * (ww + ww_rand))))
+    rhs = -((np.multiply(ax, D1w.dot(u * (w + ww_rand))))
+            + (np.multiply(np.logical_not(ax), D1o.dot(u * (w + ww_rand))))
+            + (np.multiply(ay, D1s.dot(v * (w + ww_rand))))
+            + (np.multiply(np.logical_not(ay), D1n.dot(v * (w + ww_rand))))
 
-            - kin_vis * (Lap0.matrix * (ww + ww_rand))
+            - kin_vis * (Lap0.matrix * (w + ww_rand))
             )
-    return rhs
+    return [rhs,u,v]
 
 
 def rk4(f, ww, max_iter):
@@ -44,26 +44,33 @@ def rk4(f, ww, max_iter):
     dt = 0
 
     for i in range(max_iter + 1):
-        k1 = f(ww, t+dt/2)
-        k2 = f(ww + k1*dt/2, t+dt/2)
-        k3 = f(ww + k2*dt/2, t+dt/2)
-        k4 = f(ww + k3*dt, t+dt)
+        k1 = f(ww, t+dt/2)[0]
+        k2 = f(ww + k1*dt/2, t+dt/2)[0]
+        k3 = f(ww + k2*dt/2, t+dt/2)[0]
+        [k4,u,v] = f(ww + k3*dt, t+dt)
 
         ww += dt*(k1 + 2*k2 + 2*k3 + k4)/6
         t += dt
 
+        #Schrittweitenmodulation
+        dt = h * CFL/max(np.abs(np.append(u, v)))
+
         yield ww
 
-kin_vis = 0.01
+#Konstantendef
+
+kin_vis = 0
 h = 1
-loop_count = 0
+CFL = 0.5
+
 dir = os.path.dirname(__file__)
 paths = glob.glob(dir + "\\*.png")
+loop_count = 0
 for image_path in paths:
     print(str(loop_count) + ': ' + image_path)
     loop_count += 1
 
-image_path = paths[2]  # paths[int(input())]
+image_path = paths[1]  # paths[int(input())]
 image = np.array(plt.imread(image_path))
 
 gridshape = image[:, :, 1].shape
@@ -110,15 +117,27 @@ XX, YY = np.meshgrid(xx, yy)
 WW = np.sin(1 * np.pi * (XX)) * np.sin(4 * np.pi * YY)
 ww = WW.reshape(gridlength)
 
-D1x = Ableitung(gridshape, 0, 1, 0, rand=b_rand)
-D1y = Ableitung(gridshape, 1, 1, 0, rand=b_rand)
-D1o = Ableitung(gridshape, 0, 1,  0.5, rand=b_rand)
-D1w = Ableitung(gridshape, 0, 1, -0.5, rand=b_rand)
-D1s = Ableitung(gridshape, 0, 1,  0.5, rand=b_rand)
-D1n = Ableitung(gridshape, 1, 1, -0.5, rand=b_rand)
+D1x = Ableitung(gridshape, 0, 1, 0, 2, rand=b_rand)
+D1y = Ableitung(gridshape, 1, 1, 0, 2, rand=b_rand)
 
-Lap0 = Ableitung(gridshape, 0, 2, 0, rand=b_rand)
-Lap0 = Lap0.add(Ableitung(gridshape, 1, 2, 0, rand=b_rand))
+D1o = Ableitung(gridshape, 0, 1,  0.5, 1, rand=b_rand)
+D1w = Ableitung(gridshape, 0, 1, -0.5, 1, rand=b_rand)
+D1s = Ableitung(gridshape, 0, 1,  0.5, 1, rand=b_rand)
+D1n = Ableitung(gridshape, 1, 1, -0.5, 1, rand=b_rand)
+
+Lap0 = Ableitung(gridshape, 0, 2, 0, 2, rand=b_rand)
+Lap0 = Lap0.add(Ableitung(gridshape, 1, 2, 0, 2, rand=b_rand))
+
+# D1x = Ableitung_orig(Stencil(1, [-1, 0, 1]), gridshape, 0)
+# D1y = Ableitung_orig(Stencil(1, [-1, 0, 1]), gridshape, 1)
+
+# D1o = Ableitung_orig(Stencil(1, [0, 1]), gridshape, 0)
+# D1w = Ableitung_orig(Stencil(1, [-1, 0]), gridshape, 0)
+# D1n = Ableitung_orig(Stencil(1, [0, 1]), gridshape, 1)
+# D1s = Ableitung_orig(Stencil(1, [-1, 0]), gridshape, 1)
+
+# Lap0 = Ableitung_orig(Stencil(2, [-1, 0, 1]), gridshape, 0)
+# Lap0 = Lap0.add(Ableitung_orig(Stencil(2, np.array([-1, 0, 1])), gridshape, 1))
 
 Lap0.randmod(b_rand, 'r')
 
@@ -177,10 +196,8 @@ Lap0.final()
 Lap1.final()
 
 
-plt.imshow(Lap1.matrix.todense())
-plt.show()
 # LLLLLLOOOOOOOOOOOOOPPPPPPPP
-#plt.ion()
+plt.ion()
 fig = plt.figure()
 
 
@@ -228,8 +245,20 @@ fig = plt.figure()
 #
 #     ww += rhs*dt
 #
-#     loop_count += 1
+#
 # rk4
+loop_count = 0
+im = plt.imshow((ww).reshape(gridshape))
+cbar = plt.colorbar()
+plt.pause(0.001)
+
+
 for ww in rk4(rhs, ww, 1000):
-plt.imshow(rhs(ww,0).reshape(gridshape))
-plt.show()
+    norm = colors.Normalize(np.min(ww), np.max(ww))
+
+    im.set_data((ww).reshape(gridshape))
+    im.set_norm(norm)
+    plt.pause(1)
+
+    print(loop_count)
+    loop_count += 1

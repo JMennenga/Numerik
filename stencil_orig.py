@@ -25,7 +25,7 @@ class Stencil:
     def len(self):
         return self.length
 
-class Ableitung:
+class Ableitung_orig:
     def __init__(self, stencil, shape, Orientation):
         self.gridshape = shape
         self.sidelength = shape[0]*shape[1]
