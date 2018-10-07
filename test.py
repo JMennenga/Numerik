@@ -30,8 +30,8 @@ def rhs(w, t):
 
     rhs = -((np.multiply(ax, D1w.dot(u * (w + ww_rand))))
             + (np.multiply(np.logical_not(ax), D1o.dot(u * (w + ww_rand))))
-            + (np.multiply(ay, D1s.dot(v * (w + ww_rand))))
-            + (np.multiply(np.logical_not(ay), D1n.dot(v * (w + ww_rand))))
+            + (np.multiply(ay, D1n.dot(v * (w + ww_rand))))
+            + (np.multiply(np.logical_not(ay), D1s.dot(v * (w + ww_rand))))
 
             - kin_vis * (Lap0.matrix * (w + ww_rand))
             )
@@ -59,9 +59,9 @@ def rk4(f, ww, max_iter):
 
 #Konstantendef
 
-kin_vis = 0
+kin_vis = 0.1
 h = 1
-CFL = 0.5
+CFL = 0.8
 
 dir = os.path.dirname(__file__)
 paths = glob.glob(dir + "\\*.png")
@@ -114,19 +114,19 @@ xx = np.linspace(0, 1, gridshape[0])
 yy = np.linspace(0, 1, gridshape[1])
 XX, YY = np.meshgrid(xx, yy)
 
-WW = np.sin(1 * np.pi * (XX)) * np.sin(4 * np.pi * YY)
+WW = np.sin(3 * np.pi * (XX)) * np.sin(4 * np.pi * YY)
 ww = WW.reshape(gridlength)
 
-D1x = Ableitung(gridshape, 0, 1, 0, 2, rand=b_rand)
-D1y = Ableitung(gridshape, 1, 1, 0, 2, rand=b_rand)
+D1x = Ableitung(gridshape, 0, 1, 0, 10, rand=b_rand)
+D1y = Ableitung(gridshape, 1, 1, 0, 10, rand=b_rand)
 
-D1o = Ableitung(gridshape, 0, 1,  0.5, 1, rand=b_rand)
-D1w = Ableitung(gridshape, 0, 1, -0.5, 1, rand=b_rand)
-D1s = Ableitung(gridshape, 1, 1,  0.5, 1, rand=b_rand)
-D1n = Ableitung(gridshape, 1, 1, -0.5, 1, rand=b_rand)
+D1o = Ableitung(gridshape, 0, 1,  0.5, 9, rand=b_rand)
+D1w = Ableitung(gridshape, 0, 1, -0.5, 9, rand=b_rand)
+D1s = Ableitung(gridshape, 1, 1,  0.5, 9, rand=b_rand)
+D1n = Ableitung(gridshape, 1, 1, -0.5, 9, rand=b_rand)
 
-Lap0 = Ableitung(gridshape, 0, 2, 0, 2, rand=b_rand)
-Lap0 = Lap0.add(Ableitung(gridshape, 1, 2, 0, 2, rand=b_rand))
+Lap0 = Ableitung(gridshape, 0, 2, 0, 10, rand=b_rand)
+Lap0 = Lap0.add(Ableitung(gridshape, 1, 2, 0, 10, rand=b_rand))
 
 # D1x = Ableitung_orig(Stencil(1, [-1, 0, 1]), gridshape, 0)
 # D1y = Ableitung_orig(Stencil(1, [-1, 0, 1]), gridshape, 1)
@@ -192,9 +192,9 @@ del b2
 
 Lap_rand = sparse.csr_matrix(Lap_rand)
 
-Lap0.final()
-Lap1.final()
-
+for i in [D1x,D1y,D1w,D1o,D1s,D1n,Lap0,Lap1]:
+    i.final()
+Lap1i = splinalg.inv(Lap1.matrix)
 
 # LLLLLLOOOOOOOOOOOOOPPPPPPPP
 plt.ion()
