@@ -7,13 +7,13 @@ import scipy.sparse as sparse
 import scipy.sparse.linalg as splinalg
 import matplotlib.colors as colors
 from stencil import Ableitung
-from stencil_orig import Ableitung_orig, Stencil
+#from stencil_orig import Ableitung_orig, Stencil
 
 
 def rhs(w, t):
     w[b_rand] = 0
-    psi_innen = splinalg.spsolve(Lap1.matrix, (w - Lap0.matrix * psi_rand))
-
+    #psi_innen = splinalg.spsolve(Lap1.matrix, (w - Lap0.matrix * psi_rand))
+    psi_innen = Lap1i*(w - Lap0.matrix * psi_rand)
     u = D1y.matrix * (psi_rand + psi_innen)
     u[np.array(dir_rand & 0x3, dtype=bool)
       ] = u_rand[np.array(dir_rand & 0x3, dtype=bool)]
@@ -70,7 +70,7 @@ for image_path in paths:
     print(str(loop_count) + ': ' + image_path)
     loop_count += 1
 
-image_path = paths[1]  # paths[int(input())]
+image_path = paths[2]  # paths[int(input())]
 image = np.array(plt.imread(image_path))
 
 gridshape = image[:, :, 1].shape
