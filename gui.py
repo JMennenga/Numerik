@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.widgets as wdg
 import numpy as np
 import threading
+import test
 
 def submit(text):
 
@@ -9,11 +10,15 @@ def submit(text):
     global simloop_active
 
     lock = threading.Lock()
-    barrier =
 
-    draw_thread = threading.Thread(target = None)
-    sim_thread = threading.Thread(target = None, args=(im))
+    draw_thread = threading.Thread(target = updateplot, args = (im,))
+    sim_thread = threading.Thread(target = test.sim)
 
+    draw_thread.start()
+    sim_thread.start()
+
+    draw_thread.join()
+    sim_thread.join()
 def updateplot(im):
 
     global drawobj
@@ -52,4 +57,5 @@ options = wdg.RadioButtons(opt_ax, ('Euler-Vorwärtsschritt', 'RK4'))
 text_box = wdg.TextBox(txt_ax, 'Anfangsbedingung', initial='numpy functions can be written as np.*')
 text_box.on_submit(submit)
 
+im = plt.imshow
 plt.show(fig)
