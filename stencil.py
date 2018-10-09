@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 
 
 class Stencil:
-    def __init__(self, ord, s):
+    def __init__(self, ord, h, s):
         self.ordnung = ord
         self.pos = np.array(s)
-        self.coefficients = self.getcoefficients(self.pos, ord)
+        self.coefficients = self.getcoefficients(self.pos, h, ord)
         self.length = len(s)
 
-    def getcoefficients(self, s, ord):
+    def getcoefficients(self, s, h, ord):
         vand = np.zeros((len(s), len(s)))
         for i in range(0, len(s)):
 
@@ -22,7 +22,7 @@ class Stencil:
         b = np.zeros((len(s), 1))
         b[ord] = math.factorial(ord)
 
-        c = np.linalg.solve(vand, b)
+        c = (h**(-ord)) * np.linalg.solve(vand, b)
         return c
 
     def len(self):
@@ -31,7 +31,7 @@ class Stencil:
 
 class Ableitung:
 
-    def __init__(self, shape, orientation, ablOrdnung=1,  offset=0, maxOrdnung=10, rand=[]):
+    def __init__(self, shape, h, orientation, ablOrdnung=1,  offset=0, maxOrdnung=10, rand=[]):
         """
             Patameter:
                 shape (Tuple):
@@ -85,7 +85,7 @@ class Ableitung:
                 for i in iter:
 
                     a = np.ceil(np.arange(i+1) - ((i+1)/2) + offset)
-                    s = Stencil(ablOrdnung, a)
+                    s = Stencil(ablOrdnung, h, a)
                     if n == 1:
                         self.matrix = self.matrix + \
                             (sparse.diags(rand_dist <= n, dtype=bool) * self.sten2mat(s, orientation))
@@ -101,7 +101,7 @@ class Ableitung:
                     n += 1
             else:
                 a = np.ceil(np.arange(iter[0]+1) - ((iter[0]+1)/2) + offset)
-                s = Stencil(ablOrdnung, a)
+                s = Stencil(ablOrdnung, h, a)
                 self.matrix = self.matrix + \
                     (self.sten2mat(s, orientation))
 
@@ -112,7 +112,7 @@ class Ableitung:
             if not (offset % 1):
                 maxOrdnung += 1
             print(maxOrdnung)
-            stencil = Stencil(ablOrdnung, np.ceil(
+            stencil = Stencil(ablOrdnung, h, np.ceil(
                 np.arange(maxOrdnung) - np.floor(maxOrdnung/2) + offset))
             self.matrix = self.sten2mat(stencil, orientation)
             # self.matrix.eliminate_zeros()
@@ -184,6 +184,6 @@ if __name__ == '__main__':
     b_rand[19,:] = 1
     b_rand[:,0] = 1
     b_rand[:,19] = 1
-    A = Ableitung((20, 20), 0, 1, -0.5, 5, b_rand)
+    A = Ableitung((20, 20), 1, 0, 1, -0.5, 5, b_rand)
     plt.imshow(A.matrix.todense())
     plt.show()
