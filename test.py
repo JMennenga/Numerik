@@ -86,17 +86,6 @@ def windowfkt():
 
     while simloop_active:             #INSERT Thread active
 
-        lock.acquire()
-        w = drawobj
-        lock.release()
-        W = w.reshape(gridshape)
-
-        W_oR = W[1:gridshape[0]-1,1:gridshape[1]-1]
-        norm = colors.Normalize(np.min(WW_oR), np.max(WW_oR))
-
-        im.set_data(W)
-        im.set_norm(norm)
-        plt.pause(0.0001)
 
 
 #Konstantendef
