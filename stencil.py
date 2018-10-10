@@ -67,7 +67,7 @@ class Ableitung:
 
                 rand_dist[index] = i
 
-            if not (offset % 1):
+            if not (offset % 1):                # Gilt nur eingeschränkt for hier verwendete Matrizen
                 min = 2
             else:
                 min = 1
@@ -173,8 +173,7 @@ class Ableitung:
         self.matrix = self.matrix.tocsr()
         self.matrix.eliminate_zeros()
 
-    def dot(self, other):
-        return self.matrix.dot(other)
+        self = self.matrix
 
 
 if __name__ == '__main__':
@@ -184,6 +183,11 @@ if __name__ == '__main__':
     b_rand[19,:] = 1
     b_rand[:,0] = 1
     b_rand[:,19] = 1
-    A = Ableitung((20, 20), 1, 0, 1, -0.5, 5, b_rand)
+    A = Ableitung((20, 20), 1, 0, 1, 0, 4, b_rand)
     plt.imshow(A.matrix.todense())
+    plt.show()
+
+    A.final()
+
+    plt.imshow(A.todense())
     plt.show()

@@ -191,8 +191,9 @@ def sim():
     Lap1i = splinalg.inv(Lap1.matrix)
 
     global drawobj
+    
     simloop_active = True
-
+    Thread.wait()
     for ww in rk4(rhs, ww, 1000):
         drawobj = ww
 
