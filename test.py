@@ -9,6 +9,7 @@ import matplotlib.colors as colors
 from stencil import Ableitung
 #from stencil_orig import Ableitung_orig, Stencil
 
+
 def sim():
     def rhs(w, t):
         w[b_rand] = 0
@@ -35,8 +36,7 @@ def sim():
 
                 - kin_vis * (Lap0.matrix * (w + ww_rand))
                 )
-        return [rhs,u,v]
-
+        return [rhs, u, v]
 
     def rk4(f, ww, max_iter):
 
@@ -47,12 +47,12 @@ def sim():
             k1 = f(ww, t+dt/2)[0]
             k2 = f(ww + k1*dt/2, t+dt/2)[0]
             k3 = f(ww + k2*dt/2, t+dt/2)[0]
-            [k4,u,v] = f(ww + k3*dt, t+dt)
+            [k4, u, v] = f(ww + k3*dt, t+dt)
 
             ww += dt*(k1 + 2*k2 + 2*k3 + k4)/6
             t += dt
 
-            #Schrittweitenmodulation
+            # Schrittweitenmodulation
             dt = h * CFL/max(np.abs(np.append(u, v)))
 
             yield ww
@@ -86,7 +86,7 @@ def sim():
 
         return dir_rand
 
-    #Konstantendef
+    # Konstantendef
     global simloop_active
     kin_vis = 0.1
     h = 1
@@ -131,7 +131,6 @@ def sim():
 
     Lap0 = Ableitung(gridshape, h, 0, 2, 0, 10, rand=b_rand)
     Lap0 = Lap0.add(Ableitung(gridshape, h, 1, 2, 0, 10, rand=b_rand))
-
 
     Lap0.randmod(b_rand, 'r')
 
@@ -186,14 +185,14 @@ def sim():
 
     Lap_rand = sparse.csr_matrix(Lap_rand)
 
-    for i in [D1x,D1y,D1w,D1o,D1s,D1n,Lap0,Lap1]:
+    for i in [D1x, D1y, D1w, D1o, D1s, D1n, Lap0, Lap1]:
         i.final()
     Lap1i = splinalg.inv(Lap1.matrix)
 
     global drawobj
-    
+
     simloop_active = True
-    Thread.wait()
+    # Thread.wait()
     for ww in rk4(rhs, ww, 1000):
         drawobj = ww
 
