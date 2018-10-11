@@ -70,7 +70,7 @@ for image_path in paths:
     print(str(loop_count) + ': ' + image_path)
     loop_count += 1
 
-image_path = paths[2]  # paths[int(input())]
+image_path = paths[0]  # paths[int(input())]
 image = np.array(plt.imread(image_path))
 
 gridshape = image[:, :, 1].shape
@@ -258,7 +258,7 @@ for ww in rk4(rhs, ww, 1000):
 
     im.set_data((ww).reshape(gridshape))
     im.set_norm(norm)
-    plt.pause(1)
+    plt.pause(0.001)
 
     print(loop_count)
     loop_count += 1
