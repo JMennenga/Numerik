@@ -53,6 +53,7 @@ class Ableitung:
         self.sidelength = shape[0]*shape[1]
 
         if rand.any():
+            rand = rand.reshape(shape)
             rand_dist = np.zeros(shape)
             for index, value in np.ndenumerate(rand):
                 i = 0

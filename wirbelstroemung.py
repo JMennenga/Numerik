@@ -13,9 +13,11 @@ class Wirbelstroemung:
         self.CFL = 0.9
         self.kin_vis = 0.1
         self.inverted = False
+        self.w0string = ""
+        self.maxOrdnung = 10
 
         image = np.array(plt.imread(path))
-
+        print(image.shape)
         self.gridshape = image[:, :, 1].shape
         self.gridlength = self.gridshape[0]*self.gridshape[1]
 
@@ -24,15 +26,10 @@ class Wirbelstroemung:
         self.v_rand = ((np.array(image[:, :, 2]).reshape(self.gridlength)*0xFF) - 0x7F) / 0x9F
         self.b_rand = np.array(image[:, :, 3], dtype=bool).reshape(self.gridlength)
 
-        self.dir_rand = self.getdirection(self.b_rand)
-
-        xx = np.linspace(0, 1, self.gridshape[0])
-        yy = np.linspace(0, 1, self.gridshape[1])
-        XX, YY = np.meshgrid(xx, yy)
+        self.dir_rand = self.getdirection(self.b_rand.reshape(self.gridshape))
 
     def getdirection(self, b_rand):
 
-        b_rand = b_rand.reshape(self.gridlength)
         dir_rand = np.zeros(self.gridshape, dtype=int)
 
         for i, value in np.ndenumerate(b_rand):
@@ -60,18 +57,24 @@ class Wirbelstroemung:
 
         return dir_rand
 
-    def setup(self, maxOrdnung):
+    def get_w0():
+        xx = np.linspace(0, 1, self.gridshape[0])
+        yy = np.linspace(0, 1, self.gridshape[1])
+        XX, YY = np.meshgrid(xx, yy)
+        return eval(self.w0string)
+
+    def setup(self):
         self.D1x = Ableitung(self.gridshape, self.h, 0, 1, 0, self.maxOrdnung, rand=self.b_rand)
         self.D1y = Ableitung(self.gridshape, self.h, 1, 1, 0, self.maxOrdnung, rand=self.b_rand)
 
-        self.D1o = Ableitung(self.gridshape, self.h, 0, 1,  0.5, self.maxOrdnung, rand=self.b_rand)
-        self.D1w = Ableitung(self.gridshape, self.h, 0, 1, -0.5, self.maxOrdnung, rand=self.b_rand)
-        self.D1s = Ableitung(self.gridshape, self.h, 1, 1,  0.5, self.maxOrdnung, rand=self.b_rand)
-        self.D1n = Ableitung(self.gridshape, self.h, 1, 1, -0.5, self.maxOrdnung, rand=self.b_rand)
+        self.D1o = Ableitung(self.gridshape, self.h, 0, 1,  0.5, self.maxOrdnung-1, rand=self.b_rand)
+        self.D1w = Ableitung(self.gridshape, self.h, 0, 1, -0.5, self.maxOrdnung-1, rand=self.b_rand)
+        self.D1s = Ableitung(self.gridshape, self.h, 1, 1,  0.5, self.maxOrdnung-1, rand=self.b_rand)
+        self.D1n = Ableitung(self.gridshape, self.h, 1, 1, -0.5, self.maxOrdnung-1, rand=self.b_rand)
 
-        self.Lap0 = Ableitung(self.gridshape, self.h, 0, 2, 0, self.maxOrdnung, rand=self.b_rand)
+        self.Lap0 = Ableitung(self.gridshape, self.h, 0, 2, 0, self.maxOrdnung+1, rand=self.b_rand)
         self.Lap0 = self.Lap0.add(Ableitung(self.gridshape, self.h, 1, 2,
-                                            0, self.maxOrdnung, rand=self.b_rand))
+                                            0, self.maxOrdnung+1, rand=self.b_rand))
 
         self.Lap0.randmod(self.b_rand, 'r')
 
@@ -89,19 +92,19 @@ class Wirbelstroemung:
         b1.append(sparse.spdiags(a, [self.gridshape[1], 1, -1, 0],
                                  self.gridlength, self.gridlength))
         b1.append(sparse.spdiags(
-            a, [1, -self.gridshape[1], self.gridshape[1], 0], self.gridlengh, self.gridlengh))
+            a, [1, -self.gridshape[1], self.gridshape[1], 0], self.gridlength, self.gridlength))
 
         a = np.array([1.5, 1.5, 0.5, 0.5, -4])
-        a = (a * np.ones((self.gridlengh, 5))).transpose()
+        a = (a * np.ones((self.gridlength, 5))).transpose()
         b2 = []
         b2.append(sparse.spdiags(
-            a, [-self.gridshape[1], -1, self.gridshape[1], 1, 0], self.gridlengh, self.gridlengh))
+            a, [-self.gridshape[1], -1, self.gridshape[1], 1, 0], self.gridlength, self.gridlength))
         b2.append(sparse.spdiags(
-            a, [-1, self.gridshape[1], 1, -self.gridshape[1], 0], self.gridlengh, self.gridlengh))
+            a, [-1, self.gridshape[1], 1, -self.gridshape[1], 0], self.gridlength, self.gridlength))
         b2.append(sparse.spdiags(
-            a, [self.gridshape[1], 1, -self.gridshape[1], -1, 0], self.gridlengh, self.gridlengh))
+            a, [self.gridshape[1], 1, -self.gridshape[1], -1, 0], self.gridlength, self.gridlength))
         b2.append(sparse.spdiags(a, [1, -self.gridshape[1], -1,
-                                     self.gridshape[1], 0], self.gridlengh, self.gridlengh))
+                                     self.gridshape[1], 0], self.gridlength, self.gridlength))
 
         [b_rand, dir_rand] = [a.reshape(self.gridlength) for a in [self.b_rand, self.dir_rand]]
 
@@ -133,7 +136,7 @@ class Wirbelstroemung:
         if self.inverted:
             self.Lap1i = splinalg.inv(self.Lap1)
 
-    def rk4(self, stopevent, f, ww, max_iter):
+    def rk4(self, stopevent, f, ww):
 
         t = 0
         dt = 0
@@ -152,6 +155,7 @@ class Wirbelstroemung:
 
             yield [ww, psi_tot, ret_u, ret_v, draw_ww]
         else:
+            stopevent.clear()
             yield [ww, psi_tot, ret_u, ret_v, draw_ww]
 
     def rhs(self, w, t):
