@@ -19,14 +19,24 @@ class plotwindow:
         self.idle = threading.Event()
         image = [[1,1],[1,0]]
         self.im = self.ax.imshow(image)
-
+        self.qu = self.ax.quiver()
         self.drawobj = []
+        self.options = {
+            'x'     : [0,1],
+            'y'     : [0,1],
+            'phi'   : False,
+            'uv'    : False,
+            'w'     : True
+        }
+
+
     def draw(self):
         while self.active:
             if self.idle.is_set():
                 self.Thread.wait()
             else:
-                pass
+                if options['w']:
+                    self.im.set_da
 
     def start(self):
         self.active = True
@@ -92,24 +102,24 @@ def simstart(callevent):
     simobj.setup()
 
 
-
-
-global plot
-global timestepselected
 global simobj
 global sim_thread
 global sim_terminate
+global sim_options
 
-global options
+global plot
+global plot_options
 
-options = {
+sim_options = {
+'path' : '',
 'timestep' : 0,
 'order' : 0,
 'text' : 'np.sin(3 * XX) * np(2 * YY)',
 'h': 0.1,
-'kin_vis' : 0.1
+'kin_vis' : 0.1,
 'CFL' : 0.9
 }
+
 
 fig = plt.figure(figsize=(12,9))
 
@@ -136,7 +146,7 @@ options_timestep.on_clicked(timestepselect)
 options_order = wdg.RadioButtons(optorder_ax, ('1st Order', 'Higher Order'))
 options_order.on_clicked(orderselect)
 
-text_box = wdg.TextBox(txt_ax, 'Anfangsbedingung', initial='numpy functions can be written as np.*')
+text_box = wdg.TextBox(txt_ax, 'Anfangsbedingung', initial=sim_options['text'])
 text_box.on_text_change(text_box_changed)
 
 load_btn = wdg.Button(loadbtn_ax, 'Rand auswählen')
