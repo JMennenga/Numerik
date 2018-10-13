@@ -40,20 +40,22 @@ class plotwindow:
 
     def draw(self):
         while self.active:
+            print(self.idle.is_set())
             self.idle.wait()
+            drawobj = self.getdrawobj()
             if drawobj[0] != -1:
-                print(a)
+                print('a')
                 self.ax.clear()
                 if self.options['w']:
-                    self.ax.imshow(self.drawobj[4], extent = [0,self.options['size'][0],0,self.options['size'][1]])
+                    self.ax.imshow(drawobj[4], extent = [0,self.options['size'][0],0,self.options['size'][1]])
 
                 if self.options['uv']:
-                    self.ax.quiver(self.options['x'], self.options['y'], self.drawobj[2],self.drawobj[3])
+                    self.ax.quiver(self.options['x'], self.options['y'], drawobj[2],drawobj[3])
 
                 if self.options['phi']:
-                    self.ax.contour(self.drawobj[1])
+                    self.ax.contour(drawobj[1])
 
-            self.ax.p
+            # plt.pause(0.001)
 
     def start(self):
         self.active = True
@@ -181,6 +183,7 @@ go_btn = wdg.Button(gobtn_ax, 'Start')
 go_btn.on_clicked(simstart)
 
 plot = plotwindow()
+plot.start()
 
-
+plt.ion()
 plt.show(fig)
