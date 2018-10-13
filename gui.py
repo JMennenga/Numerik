@@ -43,19 +43,19 @@ class plotwindow:
             print(self.idle.is_set())
             self.idle.wait()
             drawobj = self.getdrawobj()
+            print(drawobj[0])
             if drawobj[0] != -1:
                 print('a')
                 self.ax.clear()
                 if self.options['w']:
-                    self.ax.imshow(drawobj[4], extent = [0,self.options['size'][0],0,self.options['size'][1]])
+                    self.ax.imshow(drawobj[4].reshape(self.options['size']))#, extent = [0,self.options['size'][0],0,self.options['size'][1]])
 
                 if self.options['uv']:
                     self.ax.quiver(self.options['x'], self.options['y'], drawobj[2],drawobj[3])
 
                 if self.options['phi']:
                     self.ax.contour(drawobj[1])
-
-            # plt.pause(0.001)
+            plt.pause(0.001)
 
     def start(self):
         self.active = True
@@ -63,13 +63,13 @@ class plotwindow:
 
     def setdrawobj(self, obj):
         self.lock.acquire()
-        self.drawobj = object
+        self.drawobj = obj
         self.lock.release()
 
     def getdrawobj(self):
         self.lock.acquire()
         a = self.drawobj
-        self.lock.release
+        self.lock.release()
         return a
 
 
@@ -104,10 +104,14 @@ def simstart(callevent):
         sim_terminate.clear()
         simobj.setup()
         plot.idle.set()
+
+
+        print('setup done')
         for a in simobj.rk4(sim_terminate, simobj.rhs, simobj.get_w0()):
+            print('b')
             plot.setdrawobj(a)
         plot.idle.clear()
-
+        print('sim terminated')
 
     global simobj
     global sim_thread
@@ -124,10 +128,8 @@ def simstart(callevent):
     simobj = wirbelstroemung.Wirbelstroemung(sim_options)
     sim_thread = threading.Thread(target = sim, args = (sim_terminate,))
     sim_thread.start()
-
-    plot.options['size'] = (sim_options['h'] * sim_options['image'].shape[0],
-                            sim_options['h'] * sim_options['image'].shape[1])
-
+    print('sim started')
+    plot.options['size'] = sim_options['image'].shape[:2]
 
 global simobj
 global sim_thread

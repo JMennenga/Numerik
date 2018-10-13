@@ -151,10 +151,10 @@ class Wirbelstroemung:
             # Schrittweitenmodulation
             dt = self.h * self.CFL/max(np.abs(np.append(u, v)))
 
-            yield [ww, psi_tot, ret_u, ret_v, draw_ww]
+            yield [t, psi_tot, ret_u, ret_v, draw_ww]
         else:
             stopevent.clear()
-            yield [ww, psi_tot, ret_u, ret_v, draw_ww]
+            yield [t, psi_tot, ret_u, ret_v, draw_ww]
 
     def rhs(self, w, t):
         w[self.b_rand] = 0
