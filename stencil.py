@@ -31,7 +31,7 @@ class Stencil:
 
 class Ableitung:
 
-    def __init__(self, shape, h, orientation, ablOrdnung=1,  offset=0, maxOrdnung=10, rand=[]):
+    def __init__(self, shape, h, orientation, ablOrdnung=1,  offset=0, maxOrdnung=10, rand=np.array([])):
         """
             Patameter:
                 shape (Tuple):
@@ -174,7 +174,7 @@ class Ableitung:
         self.matrix = self.matrix.tocsr()
         self.matrix.eliminate_zeros()
 
-        self = self.matrix
+        return self.matrix
 
 
 if __name__ == '__main__':
