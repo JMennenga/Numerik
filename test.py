@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import glob
+import threading
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse as sparse
@@ -245,20 +246,56 @@ fig = plt.figure()
 #
 #     ww += rhs*dt
 #
-#
-# rk4
+
+
+global drawobj
+global l
+global draw_start
+global im
+
 loop_count = 0
 im = plt.imshow((ww).reshape(gridshape))
 cbar = plt.colorbar()
 plt.pause(0.001)
 
 
-for ww in rk4(rhs, ww, 1000):
-    norm = colors.Normalize(np.min(ww), np.max(ww))
+l = threading.Lock()
+draw_start = threading.Event()
 
+def sim():
+    global drawobj
+    global l
+    global draw_start
+
+    for w in rk4(rhs, ww, 1000):
+        l.acquire()
+        drawobj = w
+        l.release()
+        draw_start.set()
+
+
+sim_thread = threading.Thread(target = sim)
+sim_thread.start()
+
+# drawloop
+
+draw_start.wait()
+while draw_start.is_set():
+    l.acquire()
+    ww = drawobj
+    l.release()
+    norm = colors.Normalize(np.min(ww), np.max(ww))
     im.set_data((ww).reshape(gridshape))
     im.set_norm(norm)
     plt.pause(0.001)
 
-    print(loop_count)
-    loop_count += 1
+sim_thread.join()
+
+# for ww in rk4(rhs, ww, 1000):
+#
+#
+#
+#     plt.pause(0.001)
+#
+#     print(loop_count)
+#     loop_count += 1
