@@ -62,6 +62,8 @@ class Ableitung:
                         ls = [rand[index[0]-i, index[1]], rand[index[0]+i, index[1]]]
                     else:
                         ls = [rand[index[0], index[1]-i], rand[index[0], index[1]+i]]
+                    # ls = [rand[index[0]-i, index[1]], rand[index[0]+i, index[1]]]
+                    # ls = ls + [rand[index[0], index[1]-i], rand[index[0], index[1]+i]]
                     if 1 in ls:
                         break
                     i += 1
@@ -184,11 +186,6 @@ if __name__ == '__main__':
     b_rand[19,:] = 1
     b_rand[:,0] = 1
     b_rand[:,19] = 1
-    A = Ableitung((20, 20), 1, 0, 1, 0, 4, b_rand)
+    A = Ableitung((20, 20), 1, 0, 2, 0, 4, b_rand)
     plt.imshow(A.matrix.todense())
-    plt.show()
-
-    A.final()
-
-    plt.imshow(A.todense())
     plt.show()

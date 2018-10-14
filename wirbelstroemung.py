@@ -183,6 +183,10 @@ class Wirbelstroemung:
 
         ax = u > 0
         ay = v > 0
+        n = np.argmax(u)
+        print('u_max at ('+ str(n%self.gridshape[0]) + ', ' + str(n/self.gridshape[0]))
+        n = np.argmax(v)
+        print('v_max at ('+ str(n%self.gridshape[0]) + ', ' + str(n/self.gridshape[0]))
 
         self.ww = w + ww_rand
 
