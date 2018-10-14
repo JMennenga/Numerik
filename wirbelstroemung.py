@@ -64,14 +64,14 @@ class Wirbelstroemung:
         self.D1x = Ableitung(self.gridshape, self.h, 0, 1, 0, self.maxOrdnung, rand=self.b_rand)
         self.D1y = Ableitung(self.gridshape, self.h, 1, 1, 0, self.maxOrdnung, rand=self.b_rand)
 
-        self.D1o = Ableitung(self.gridshape, self.h, 0, 1,  0.5, self.maxOrdnung-1, rand=self.b_rand)
-        self.D1w = Ableitung(self.gridshape, self.h, 0, 1, -0.5, self.maxOrdnung-1, rand=self.b_rand)
-        self.D1s = Ableitung(self.gridshape, self.h, 1, 1,  0.5, self.maxOrdnung-1, rand=self.b_rand)
-        self.D1n = Ableitung(self.gridshape, self.h, 1, 1, -0.5, self.maxOrdnung-1, rand=self.b_rand)
+        self.D1o = Ableitung(self.gridshape, self.h, 0, 1,  0.5, self.maxOrdnung, rand=self.b_rand)
+        self.D1w = Ableitung(self.gridshape, self.h, 0, 1, -0.5, self.maxOrdnung, rand=self.b_rand)
+        self.D1s = Ableitung(self.gridshape, self.h, 1, 1,  0.5, self.maxOrdnung, rand=self.b_rand)
+        self.D1n = Ableitung(self.gridshape, self.h, 1, 1, -0.5, self.maxOrdnung, rand=self.b_rand)
 
-        self.Lap0 = Ableitung(self.gridshape, self.h, 0, 2, 0, self.maxOrdnung+1, rand=self.b_rand)
+        self.Lap0 = Ableitung(self.gridshape, self.h, 0, 2, 0, self.maxOrdnung, rand=self.b_rand)
         self.Lap0 = self.Lap0.add(Ableitung(self.gridshape, self.h, 1, 2,
-                                            0, self.maxOrdnung+1, rand=self.b_rand))
+                                            0, self.maxOrdnung, rand=self.b_rand))
 
         self.Lap0.randmod(self.b_rand, 'r')
 
@@ -159,8 +159,8 @@ class Wirbelstroemung:
             yield [t, draw_ww]
 
     def rhs(self, w, t):
-        w[self.b_rand] = 0
 
+        w[self.b_rand] = 0
         if self.inverted:
             psi_innen = self.Lap1i * (w - self.Lap0 * self.psi_rand)
         else:
