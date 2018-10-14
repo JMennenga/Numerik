@@ -14,6 +14,8 @@ class Wirbelstroemung:
         self.inverted = options['inverted']
         self.w0string = options['text']
         self.maxOrdnung = options['order']
+        if not self.maxOrdnung:
+            self.maxOrdnung = 2
 
         self.gridshape = self.image[:, :, 1].shape
         self.gridlength = self.gridshape[0]*self.gridshape[1]
@@ -121,7 +123,7 @@ class Wirbelstroemung:
         self.Neumann_Korrekturx = 2 * self.h * (sparse.diags(self.dir_rand & 0x1, dtype=float)
                                                 - sparse.diags(self.dir_rand & 0x2, dtype=float))
 
-        self.Neumann_Korrektury = 2 * self.h * (sparse.diags(self.dir_rand & 0x4, dtype=float)
+        self.Neumann_Korrektury = 2 *  self.h * (sparse.diags(self.dir_rand & 0x4, dtype=float)
                                                 - sparse.diags(self.dir_rand & 0x8, dtype=float))
 
         self.Lap_rand = sparse.csr_matrix(self.Lap_rand)
@@ -152,11 +154,10 @@ class Wirbelstroemung:
 
             # Schrittweitenmodulation
             dt = self.h * self.CFL/max(np.abs(np.append(u, v)))
+            yield [t, draw_ww]
 
-            yield [t, draw_ww]
-        else:
-            stopevent.clear()
-            yield [t, draw_ww]
+        #stopevent.clear()
+        yield [t, draw_ww]
 
     def rhs(self, w, t):
 
@@ -178,7 +179,7 @@ class Wirbelstroemung:
           ] = self.v_rand[np.array(self.dir_rand & 0xC, dtype=bool)]
 
         ww_rand = self.Lap_rand * (self.psi_rand + psi_innen) + \
-            self.Neumann_Korrekturx * u + self.Neumann_Korrekturx * v
+            self.Neumann_Korrekturx * u + self.Neumann_Korrektury * v
 
         ax = u > 0
         ay = v > 0
