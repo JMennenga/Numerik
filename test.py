@@ -61,7 +61,7 @@ def rk4(f, ww, max_iter):
 #Konstantendef
 
 kin_vis = 0.1
-h = 1
+h = 0.1
 CFL = 0.8
 
 dir = os.path.dirname(__file__)
@@ -115,7 +115,7 @@ xx = np.linspace(0, 1, gridshape[0])
 yy = np.linspace(0, 1, gridshape[1])
 XX, YY = np.meshgrid(xx, yy)
 
-WW = np.sin(3 * np.pi * (XX)) * np.sin(4 * np.pi * YY)
+WW = np.sin(3 * np.pi * (XX)) * np.sin(3 * np.pi * YY)
 ww = WW.reshape(gridlength)
 
 D1x = Ableitung(gridshape, 0, 1, 0, 10, rand=b_rand)
@@ -278,6 +278,7 @@ sim_thread = threading.Thread(target = sim)
 sim_thread.start()
 
 # drawloop
+
 
 draw_start.wait()
 while draw_start.is_set():
