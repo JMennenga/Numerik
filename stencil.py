@@ -128,13 +128,13 @@ class Ableitung:
         matrix = sparse.lil_matrix((self.sidelength, self.sidelength))
 
         if (Orientation == 0):
-            a = stencil.coefficients * np.ones((stencil.len(),  self.gridshape[0]))
-            abl1D = sparse.spdiags(a, stencil.pos, self.gridshape[0], self.gridshape[0])
-            matrix = sparse.kron(sparse.eye(self.gridshape[1]), abl1D, 'lil')
-        elif (Orientation == 1):
             a = stencil.coefficients * np.ones((stencil.len(),  self.gridshape[1]))
             abl1D = sparse.spdiags(a, stencil.pos, self.gridshape[1], self.gridshape[1])
-            matrix = sparse.kron(abl1D, sparse.eye(self.gridshape[0]), 'lil')
+            matrix = sparse.kron(sparse.eye(self.gridshape[0]), abl1D, 'lil')
+        elif (Orientation == 1):
+            a = stencil.coefficients * np.ones((stencil.len(),  self.gridshape[0]))
+            abl1D = sparse.spdiags(a, stencil.pos, self.gridshape[0], self.gridshape[0])
+            matrix = sparse.kron(abl1D, sparse.eye(self.gridshape[1]), 'lil')
 
         return matrix
 
@@ -181,11 +181,11 @@ class Ableitung:
 
 if __name__ == '__main__':
 
-    b_rand = np.zeros((20,20), dtype=bool)
+    b_rand = np.zeros((10,20), dtype=bool)
     b_rand[0,:] = 1
-    b_rand[19,:] = 1
+    b_rand[9,:] = 1
     b_rand[:,0] = 1
     b_rand[:,19] = 1
-    A = Ableitung((20, 20), 1, 0, 2, 0, 4, b_rand)
+    A = Ableitung((10, 20), 1, 0, 2, 0, 4, b_rand)
     plt.imshow(A.matrix.todense())
     plt.show()
