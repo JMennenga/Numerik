@@ -62,7 +62,7 @@ sim_Thread.start()
 #Window setup
 plt.ion()
 window = plt.figure(figsize=(10,8))
-plot = window.add_subplot(111)
+plot = window.add_subplot(121)
 im = plot.imshow(w0.reshape(sim_options['shape']))
 cbar = plt.colorbar(im)
 
