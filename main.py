@@ -1,8 +1,11 @@
+import copy
 import numpy as np
 import threading
 import wirbelstroemung
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
+import matplotlib.animation as ani
+import matplotlib.gridspec as gridspec
 from tkinter import Tk, filedialog
 
 global sim_stop
@@ -15,10 +18,10 @@ global b
 sim_options = {
 'image' : [],
 'timestep' : 0,
-'order' : 10,
-'text' : 'np.sin(3 * np.pi * XX) * np.sin(3 * np.pi * YY)',
-'h':   1,
-'kin_vis' : 0.1,  #stabilitätsprobleme bei O(h)^2 ~ O(kin_vis)
+'order' : 4,
+'text' : '5 * np.sin(3 * np.pi * XX)**2 * np.sin(3 * np.pi * YY) * np.exp(-(XX-0.6)**2 - (YY-0.7)**2)' ,
+'h':   0.02,
+'kin_vis' : 0,  #stabilitätsprobleme bei O(h)^2 ~ O(kin_vis)
 'CFL' : 0.7,
 'inverted' : True
 }
@@ -60,47 +63,55 @@ sim_Thread = threading.Thread(target = sim, args=(simobj,))
 sim_Thread.start()
 
 #Window setup
-plt.ion()
-window = plt.figure(figsize=(10,8))
-plot = window.add_subplot(211)
+window = plt.figure(figsize=(10,9))
+gc = gridspec.GridSpec(4, 1)
+plot = window.add_subplot(gc[0:3,0])
 im = plot.imshow(w0.reshape(sim_options['shape']))
 cbar = plt.colorbar(im)
 
+global histo_data
 
-histo_plot = window.add_subplot(212)
-histo_data = np.array([[0,w0.sum()*sim_options['h']**2]])
+histo_plot = window.add_subplot(gc[3,0])
+histo_data = np.array([[0,0]])#[[0,w0.sum()*sim_options['h']**2]])
 histo_line, = histo_plot.plot(histo_data[:,0],histo_data[:,1])
-
-
 
 def window_closed(evt):
     global sim_stop
     sim_stop.set()
 
 window.canvas.mpl_connect('close_event', window_closed)
-plt.show(block = False)
-plt.pause(0.001)
 
 sim_started.wait()
-while sim_started.is_set():
-    b.wait()
-    draw_lock.acquire()
-    t = drawobj[0]
-    ww = drawobj[1]
-    draw_lock.release()
-    
-    histo_data = np.append(histo_data,[[t,ww.sum()*sim_options['h']**2]], 0)
+
+def threadread():
+    global b
+    global draw_lock
+    global drawobj
+    while sim_started.is_set():
+        b.wait()
+        draw_lock.acquire()
+        c = copy.deepcopy(drawobj)
+        draw_lock.release()
+        yield c
+
+def animation(frame):
+    global histo_data
+    t = frame[0]
+    ww = frame[1]
+    histo_data = np.append(histo_data,[[t,ww[np.logical_not(simobj.b_rand)].sum()*sim_options['h']**2]], 0)
+
     histo_line.set_ydata(histo_data[:,1])
     histo_line.set_xdata(histo_data[:,0])
     histo_plot.set_xlim([0,histo_data[-1,0]])
     histo_plot.set_ylim(np.min([0] + histo_data[:,1]) ,max([0] + histo_data[:,1]))
-
 
     ww = ww.reshape(sim_options['shape'])
     im.set_data(ww)
     norm = colors.Normalize(np.min(ww[1:sim_options['shape'][0]-1,1:sim_options['shape'][1]-1]),
                             np.max(ww[1:sim_options['shape'][0]-1,1:sim_options['shape'][1]-1]))
     im.set_norm(norm)
+    return [histo_line,im]
 
-    plt.pause(0.001)
+anim = ani.FuncAnimation(window, animation, frames=threadread)
+plt.show()
 sim_Thread.join()
