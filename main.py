@@ -18,7 +18,7 @@ global b
 sim_options = {
 'image' : [],
 'timestep' : 0,
-'order' : 4,
+'order' : 10,
 'text' : '5 * np.sin(3 * np.pi * XX)**2 * np.sin(3 * np.pi * YY) * np.exp(-(XX-0.6)**2 - (YY-0.7)**2)' ,
 'h':   0.02,
 'kin_vis' : 0,  #stabilitätsprobleme bei O(h)^2 ~ O(kin_vis)
@@ -56,8 +56,9 @@ def sim(wirbel_obj):
         drawobj = w
         draw_lock.release()
         sim_started.set()
-        b.wait()
+        # b.wait()
     sim_started.clear()
+    # b.abort()
 
 sim_Thread = threading.Thread(target = sim, args=(simobj,))
 sim_Thread.start()
@@ -66,6 +67,7 @@ sim_Thread.start()
 window = plt.figure(figsize=(10,9))
 gc = gridspec.GridSpec(4, 1)
 plot = window.add_subplot(gc[0:3,0])
+plot.set_title('Wirbelstärke')
 im = plot.imshow(w0.reshape(sim_options['shape']))
 cbar = plt.colorbar(im)
 
@@ -77,7 +79,11 @@ histo_line, = histo_plot.plot(histo_data[:,0],histo_data[:,1])
 
 def window_closed(evt):
     global sim_stop
+    global sim_Thread
     sim_stop.set()
+    # b.abort()
+    # b.wait()
+    print('STOP')
 
 window.canvas.mpl_connect('close_event', window_closed)
 
@@ -87,13 +93,15 @@ def threadread():
     global b
     global draw_lock
     global drawobj
-    while sim_started.is_set():
-        b.wait()
-        draw_lock.acquire()
-        c = copy.deepcopy(drawobj)
-        draw_lock.release()
+    try:
+        while sim_started.is_set():
+            # b.wait()
+            draw_lock.acquire()
+            c = copy.deepcopy(drawobj)
+            draw_lock.release()
+            yield c
+    except threading.BrokenBarrierError:
         yield c
-
 def animation(frame):
     global histo_data
     t = frame[0]
