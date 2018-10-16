@@ -16,7 +16,7 @@ sim_options = {
 'image' : [],
 'timestep' : 0,
 'order' : 10,
-'text' : 'np.sin(3 * np.pi * XX) * np.sin(4 * np.pi * YY)',
+'text' : 'np.sin(3 * np.pi * XX) * np.sin(3 * np.pi * YY)',
 'h':   1,
 'kin_vis' : 0.1,  #stabilitätsprobleme bei O(h)^2 ~ O(kin_vis)
 'CFL' : 0.7,
@@ -62,9 +62,16 @@ sim_Thread.start()
 #Window setup
 plt.ion()
 window = plt.figure(figsize=(10,8))
-plot = window.add_subplot(121)
+plot = window.add_subplot(211)
 im = plot.imshow(w0.reshape(sim_options['shape']))
 cbar = plt.colorbar(im)
+
+
+histo_plot = window.add_subplot(212)
+histo_data = np.array([[0,w0.sum()*sim_options['h']**2]])
+histo_line, = histo_plot.plot(histo_data[:,0],histo_data[:,1])
+
+
 
 def window_closed(evt):
     global sim_stop
@@ -78,12 +85,22 @@ sim_started.wait()
 while sim_started.is_set():
     b.wait()
     draw_lock.acquire()
+    t = drawobj[0]
     ww = drawobj[1]
     draw_lock.release()
+    
+    histo_data = np.append(histo_data,[[t,ww.sum()*sim_options['h']**2]], 0)
+    histo_line.set_ydata(histo_data[:,1])
+    histo_line.set_xdata(histo_data[:,0])
+    histo_plot.set_xlim([0,histo_data[-1,0]])
+    histo_plot.set_ylim(np.min([0] + histo_data[:,1]) ,max([0] + histo_data[:,1]))
+
+
     ww = ww.reshape(sim_options['shape'])
     im.set_data(ww)
     norm = colors.Normalize(np.min(ww[1:sim_options['shape'][0]-1,1:sim_options['shape'][1]-1]),
                             np.max(ww[1:sim_options['shape'][0]-1,1:sim_options['shape'][1]-1]))
     im.set_norm(norm)
+
     plt.pause(0.001)
 sim_Thread.join()

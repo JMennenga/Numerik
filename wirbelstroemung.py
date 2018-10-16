@@ -2,7 +2,6 @@ import numpy as np
 import scipy.sparse as sparse
 import scipy.sparse.linalg as splinalg
 from stencil import Ableitung
-import matplotlib.pyplot as plt
 
 class Wirbelstroemung:
     def __init__(self, options):
@@ -179,9 +178,6 @@ class Wirbelstroemung:
         = [i.final() for i in [self.D1x, self.D1y, self.D1w, self.D1o, self.D1s, self.D1n, self.Lap0, self.Lap1]]
 
         self.invert()
-
-        plt.imshow(self.Lap0.todense())
-        plt.show()
 
     def invert(self):
         if self.inverted:
