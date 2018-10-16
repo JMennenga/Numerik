@@ -18,17 +18,18 @@ sim_options = {
 'order' : 10,
 'text' : 'np.sin(3 * np.pi * XX) * np.sin(4 * np.pi * YY)',
 'h':   1,
-'kin_vis' : 0.1,
+'kin_vis' : 0.1,  #stabilitätsprobleme bei O(h)^2 ~ O(kin_vis)
 'CFL' : 0.7,
 'inverted' : True
 }
-
+#Instabilitöt liegt vermutlich an der Ausführung des Zeitschritts
 
 tmp = Tk()
 tmp.withdraw() # we don't want a full GUI, so keep the root window from appearing
 sim_options['image'] = np.array(plt.imread(filedialog.askopenfilename())) # show an "Open" dialog box and return the path to the selected file
 tmp.destroy()
 sim_options['shape'] = sim_options['image'].shape[:2]
+
 #Thread setup
 draw_lock = threading.Lock()
 sim_stop = threading.Event()
@@ -37,6 +38,7 @@ b = threading.Barrier(2)
 simobj = wirbelstroemung.Wirbelstroemung(sim_options)
 simobj.setup()
 w0 = simobj.get_w0()
+
 def sim(wirbel_obj):
 
     global sim_stop

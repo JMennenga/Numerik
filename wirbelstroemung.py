@@ -180,6 +180,9 @@ class Wirbelstroemung:
 
         self.invert()
 
+        plt.imshow(self.Lap0.todense())
+        plt.show()
+
     def invert(self):
         if self.inverted:
             self.Lap1i = splinalg.inv(self.Lap1)
@@ -196,19 +199,19 @@ class Wirbelstroemung:
             stopevent: Event
         """
         t = 0
-        dt = 0  #im ersten Durchlauf wird der erste zeitschritt bestimmt
+        dt = 0
 
         while not stopevent.is_set():
-            [k1, ret_u, ret_v, draw_ww] = f(ww, t)
+            [k1, u, v, draw_ww] = f(ww, t)
+            # Schrittweitenmodulation
+            dt = self.h * self.CFL/max(np.abs(np.append(u, v)))
             k2 = f(ww + k1*dt/2, t+dt/2)[0]
             k3 = f(ww + k2*dt/2, t+dt/2)[0]
-            [k4, u, v] = f(ww + k3*dt, t+dt)[:3]
+            k4 = f(ww + k3*dt, t+dt)[0]
 
             ww += dt*(k1 + 2*k2 + 2*k3 + k4)/6
             t += dt
 
-            # Schrittweitenmodulation
-            dt = self.h * self.CFL/max(np.abs(np.append(u, v)))
             yield [t, draw_ww]
 
         #stopevent.clear()
@@ -222,9 +225,9 @@ class Wirbelstroemung:
 
         # psi-Integration
         if self.inverted:
-            psi_innen = self.Lap1i * (w - self.Lap0 * self.psi_rand)
+            psi_innen = -self.Lap1i * (w + self.Lap0 * self.psi_rand)
         else:
-            psi_innen = splinalg.spsolve(self.Lap1, (w - self.Lap0 * self.psi_rand))
+            psi_innen = -splinalg.spsolve(self.Lap1, (w + self.Lap0 * self.psi_rand))
 
         psi_tot = self.psi_rand + psi_innen
 
@@ -240,8 +243,8 @@ class Wirbelstroemung:
           ] = self.v_rand[np.array(self.dir_rand & 0xC, dtype=bool)]
 
         #Berechen von ww_rand mittels der Rand-Matrizen
-        ww_rand = self.Lap_rand * (self.psi_rand + psi_innen) + \
-             self.Neumann_Korrekturx * u + self.Neumann_Korrektury * v
+        ww_rand = - (self.Lap_rand * (self.psi_rand + psi_innen)
+              + self.Neumann_Korrekturx * u + self.Neumann_Korrektury * v)
 
 
         #Upwind-Bedingung
@@ -261,5 +264,5 @@ class Wirbelstroemung:
 
                 - self.kin_vis * (self.Lap0 * (w + ww_rand))    #Reibungsterm
                 )
-                
+
         return [rhs, u, v, self.ww]
