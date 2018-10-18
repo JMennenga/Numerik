@@ -7,9 +7,11 @@ import scipy.sparse as sparse
 import scipy.sparse.linalg as splinalg
 import matplotlib.colors as colors
 from stencil import Ableitung
+import cProfile
 #from stencil_orig import Ableitung_orig, Stencil
 
-
+pr = cProfile.Profile()
+pr.enable()
 def rhs(w, t):
     w[b_rand] = 0
     #psi_innen = splinalg.spsolve(Lap1.matrix, (w - Lap0.matrix * psi_rand))
@@ -70,13 +72,18 @@ for image_path in paths:
     print(str(loop_count) + ': ' + image_path)
     loop_count += 1
 
-image_path = paths[2]  # paths[int(input())]
+image_path = paths[4]  # paths[int(input())]
 image = np.array(plt.imread(image_path))
 
 gridshape = image[:, :, 1].shape
 gridlength = gridshape[0]*gridshape[1]
 
+print(np.array(image[:, :, 0]))
 print(np.array(image[:, :, 1]))
+print(np.array(image[:, :, 2]))
+print(np.array(image[:, :, 3]))
+
+
 
 psi_rand = np.array(image[:, :, 0]).reshape(gridlength)
 u_rand = ((np.array(image[:, :, 1]).reshape(gridlength)*0xFF) - 0x7F) / 0x9F
@@ -114,7 +121,8 @@ xx = np.linspace(0, 1, gridshape[0])
 yy = np.linspace(0, 1, gridshape[1])
 XX, YY = np.meshgrid(xx, yy)
 
-WW = np.sin(3 * np.pi * (XX)) * np.sin(4 * np.pi * YY)
+# WW = np.sin(3 * np.pi * (XX)) * np.sin(4 * np.pi * YY)
+WW = 0*XX*YY
 ww = WW.reshape(gridlength)
 
 D1x = Ableitung(gridshape, 0, 1, 0, 10, rand=b_rand)
@@ -198,7 +206,7 @@ Lap1i = splinalg.inv(Lap1.matrix)
 
 # LLLLLLOOOOOOOOOOOOOPPPPPPPP
 plt.ion()
-fig = plt.figure()
+# fig = plt.figure()
 
 
 # expliziter Euler
@@ -248,12 +256,15 @@ fig = plt.figure()
 #
 # rk4
 loop_count = 0
+# imag = plt.subplot()
 im = plt.imshow((ww).reshape(gridshape))
 cbar = plt.colorbar()
+# quiv = plt.subplot(2,1)
+# qv = quiv.quiver(u,v,gridshape)
 plt.pause(0.001)
 
 
-for ww in rk4(rhs, ww, 1000):
+for ww in rk4(rhs, ww, 100):
     norm = colors.Normalize(np.min(ww), np.max(ww))
 
     im.set_data((ww).reshape(gridshape))
@@ -262,3 +273,6 @@ for ww in rk4(rhs, ww, 1000):
 
     print(loop_count)
     loop_count += 1
+pr.disable()
+pr.print_stats(sort=2)
+pr.dump_stats('Profile.txt')
