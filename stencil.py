@@ -181,11 +181,12 @@ class Ableitung:
 
 if __name__ == '__main__':
 
-    b_rand = np.zeros((10,20), dtype=bool)
+    b_rand = np.zeros((30, 30), dtype=bool)
     b_rand[0,:] = 1
-    b_rand[9,:] = 1
+    b_rand[29,:] = 1
     b_rand[:,0] = 1
-    b_rand[:,19] = 1
-    A = Ableitung((10, 20), 1, 0, 2, 0, 4, b_rand)
+    b_rand[:,29] = 1
+    b_rand[13:17,13:17] = 1
+    A = Ableitung((30, 30), 1, 0, 2, 0, 4, b_rand)
     plt.imshow(A.matrix.todense())
     plt.show()
