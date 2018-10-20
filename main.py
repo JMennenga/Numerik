@@ -156,9 +156,11 @@ while not sim_stop.is_set():
     anim.save('cc19_50_' + str(i) + '.mp4', writer = FFwriter)
     i += 1
 
+outputname = "CC50x50_O9"
+
 os.system("(for %i in (*.mp4) do @echo file '%i') > mylist.txt")
-os.system("ffmpeg -f concat -i mylist.txt -c copy vid.mp4")
-os.system("move vid.mp4 ..")
+os.system("ffmpeg -f concat -i mylist.txt -c copy " + str(outputname) + ".mp4")
+os.system("move " + str(outputname) + ".mp4 ..")
 os.chdir("..")
 shutil.rmtree('tmp')
 plt.show()
