@@ -26,7 +26,7 @@ global Q
 sim_options = {
 'image' : [],
 'timestep' : 0,
-'order' : 3,
+'order' : 5,
 'text' : '5 * np.sin(3 * np.pi * XX)**2 * np.sin(3 * np.pi * YY) * np.exp(-(XX-0.6)**2 - (YY-0.7)**2)' ,
 'l':   1,
 'kin_vis' : 0.005,  #stabilitätsprobleme bei O(h)^2 ~ O(kin_vis)
@@ -67,7 +67,7 @@ def sim(wirbel_obj):
         drawobj = w
         draw_lock.release()
         sim_started.set()
-        b.wait()
+        #b.wait()
     sim_started.clear()
     b.abort()
 
@@ -76,7 +76,7 @@ sim_Thread.start()
 
 def stop():
     global sim_stop
-    stopfile = open("stop.txt", "x")
+    stopfile = open("stop.txt", "w")
     stopfile.close()
     time.sleep(15)
     while True:
@@ -102,10 +102,12 @@ stop_Thread.start()
 #Window setup
 window = plt.figure(figsize=(10,9))
 gc = gridspec.GridSpec(4, 1)
+
 plot = window.add_subplot(gc[0:3,0])
 plot.set_ylim(sim_options['shape'][0]-0.5, 0)
 plot.set_xlim(0,sim_options['shape'][1]-0.5)
-plot.set_title('Wirbelstärke')
+plot.set_title('Strömungssimulation', fontsize=20, fontweight=0, color='C0', loc='left', style='italic')
+plot.set_title('Upwind '+ str(sim_options['order']) +'. Ordung', loc = 'right')
 plot.set_xlabel('n-te x-Stützstelle')
 plot.set_ylabel('n-te y-Stützstelle')
 
@@ -136,23 +138,26 @@ Q = plot.quiver(QXpos, QYpos,
     np.zeros(sim_options['shape'])[Qmesh],
     np.zeros(sim_options['shape'])[Qmesh])
 
-plot.quiverkey(Q, -0.1, 0.8, 1, 'Geschwindigkeit', angle = 90, labelpos = 'W')
+plot.quiverkey(Q, 0.95, -0.05, 1, 'u = 1', angle = 0, labelpos = 'E')
 
 global histo_data
 
 histo_plot = window.add_subplot(gc[3,0])
-histo_plot.set_title("Totale Wirbelstärke nach Zeit")
+histo_plot.set_title("Totale Wirbelstärke nach Zeit") #, y = -1.5)
 histo_plot.set_xlabel("Zeit in Zeiteinheiten")
-histo_plot.set_ylabel( r"\int w dA")
+histo_plot.set_ylabel( r"$\int w \cdot d A$")
+
 histo_data = np.array([[0,0]])#[[0,w0.sum()*sim_options['h']**2]])
 histo_line, = histo_plot.plot(histo_data[:,0],histo_data[:,1])
+
+gc.tight_layout(window)
 
 def window_closed(evt):
     global sim_stop
     global sim_Thread
     sim_stop.set()
     b.abort()
-    b.wait()
+    #b.wait()
     print('STOP')
 
 window.canvas.mpl_connect('close_event', window_closed)
@@ -165,7 +170,7 @@ def threadread():
     global drawobj
     try:
         while sim_started.is_set():
-            b.wait()
+            #b.wait()
             draw_lock.acquire()
             c = copy.deepcopy(drawobj)
             draw_lock.release()
@@ -193,10 +198,10 @@ def animation(frame):
     ww = -ww.reshape(sim_options['shape'])
     im.set_data(ww)
 
-    norm = colors.Normalize(vmin = np.min(ww_n),
-                            vmax = np.max(ww_n))
-    # norm = colors.SymLogNorm(0.01,  vmin = np.min(ww_n),
-    #                        vmax = np.max(ww_n))
+    # norm = colors.Normalize(vmin = np.min(ww_n),
+    #                         vmax = np.max(ww_n))
+    norm = colors.SymLogNorm(0.01,  vmin = np.min(ww_n),
+                           vmax = np.max(ww_n))
 
     im.set_norm(norm)
 
