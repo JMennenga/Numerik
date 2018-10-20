@@ -208,10 +208,10 @@ class Wirbelstroemung:
             ww += dt*(k1 + 2*k2 + 2*k3 + k4)/6
             t += dt
 
-            yield [t, draw_ww]
+            yield [t, draw_ww, u, v]
 
         #stopevent.clear()
-        yield [t, draw_ww]
+        yield [t, draw_ww, u, v]
 
     def rhs(self, w, t):
 
