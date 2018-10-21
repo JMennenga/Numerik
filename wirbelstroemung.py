@@ -88,7 +88,7 @@ class Wirbelstroemung:
 
         # nicht schön -- user controlled eval
         # Sicherheitsrisiko
-        return eval(self.w0string).reshape(self.gridlength)
+        return -eval(self.w0string).reshape(self.gridlength)
 
     def setup(self):
 

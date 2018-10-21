@@ -27,9 +27,9 @@ sim_options = {
 'image' : [],
 'timestep' : 0,
 'order' : 5,
-'text' : '5 * np.sin(3 * np.pi * XX)**2 * np.sin(3 * np.pi * YY) * np.exp(-(XX-0.6)**2 - (YY-0.7)**2)' ,
+'text' : '-5 * np.sin(3 * np.pi * XX)**3 * np.sin(3 * np.pi * YY) * np.exp(-(XX-0.6)**2 - (YY-0.7)**2)' ,
 'l':   1,
-'kin_vis' : 0.005,  #stabilitätsprobleme bei O(h)^2 ~ O(kin_vis)
+'kin_vis' : 0.00005,  #stabilitätsprobleme bei O(h)^2 ~ O(kin_vis)
 'CFL' : 0.9,
 'inverted' : True
 }
@@ -104,8 +104,8 @@ window = plt.figure(figsize=(10,9))
 gc = gridspec.GridSpec(4, 1)
 
 plot = window.add_subplot(gc[0:3,0])
-plot.set_ylim(sim_options['shape'][0]-0.5, 0)
-plot.set_xlim(0,sim_options['shape'][1]-0.5)
+plot.set_ylim(sim_options['shape'][0]-0.5, -0.5)
+plot.set_xlim(-0.5,sim_options['shape'][1]-0.5)
 plot.set_title('Strömungssimulation', fontsize=20, fontweight=0, color='C0', loc='left', style='italic')
 plot.set_title('Upwind '+ str(sim_options['order']) +'. Ordung', loc = 'right')
 plot.set_xlabel('n-te x-Stützstelle')
@@ -145,7 +145,7 @@ global histo_data
 histo_plot = window.add_subplot(gc[3,0])
 histo_plot.set_title("Totale Wirbelstärke nach Zeit") #, y = -1.5)
 histo_plot.set_xlabel("Zeit in Zeiteinheiten")
-histo_plot.set_ylabel( r"$\int w \cdot d A$")
+histo_plot.set_ylabel( r"$\int \omega \cdot d A$")
 
 histo_data = np.array([[0,0]])#[[0,w0.sum()*sim_options['h']**2]])
 histo_line, = histo_plot.plot(histo_data[:,0],histo_data[:,1])
@@ -194,7 +194,7 @@ def animation(frame):
     histo_plot.set_xlim([0,histo_data[-1,0]])
     histo_plot.set_ylim(np.min([0] + histo_data[:,1]) ,max([0] + histo_data[:,1]))
 
-    ww_n = ww[np.logical_not(simobj.b_rand)]
+    ww_n = -ww[np.logical_not(simobj.b_rand)]
     ww = -ww.reshape(sim_options['shape'])
     im.set_data(ww)
 
@@ -207,7 +207,7 @@ def animation(frame):
 
     Q.set_UVC(u.reshape(sim_options['shape'])[Qmesh],
             -v.reshape(sim_options['shape'])[Qmesh])
-    #plot.set_xlim(0,)
+    plot.set_xlim(0,)
     if t >= 30:
         a = open('../30s Werte.csv', 'a')
         a.write(str(sim_options['order']) + ",")
@@ -230,7 +230,7 @@ while not sim_stop.is_set():
     anim.save('cc19_50_' + str(i).zfill(5) + '.mp4', writer = FFwriter)
     i += 1
 
-outputname = "Punkt100x50_19"
+outputname = "CC50x50_1mR0005"
 
 os.system("(for %i in (*.mp4) do @echo file '%i') > mylist.txt")
 os.system("ffmpeg -f concat -i mylist.txt -c copy " + str(outputname) + ".mp4")
