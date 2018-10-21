@@ -26,11 +26,11 @@ global Q
 sim_options = {
 'image' : [],
 'timestep' : 0,
-'order' : 5,
+'order' : 1,
 'text' : '-5 * np.sin(3 * np.pi * XX)**3 * np.sin(3 * np.pi * YY) * np.exp(-(XX-0.6)**2 - (YY-0.7)**2)' ,
 'l':   1,
-'kin_vis' : 0.00005,  #stabilitätsprobleme bei O(h)^2 ~ O(kin_vis)
-'CFL' : 0.9,
+'kin_vis' : 0,  #stabilitätsprobleme bei O(h)^2 ~ O(kin_vis)
+'CFL' : 1,
 'inverted' : True
 }
 #Instabilitöt liegt vermutlich an der Ausführung des Zeitschritts
@@ -79,7 +79,7 @@ def stop():
     stopfile = open("stop.txt", "w")
     stopfile.close()
     time.sleep(15)
-    while True:
+    while not sim_stop.is_set():
         try:
             stopfile = open("../stop.txt")
             stopstr = stopfile.read(4)
@@ -115,10 +115,10 @@ im = plot.imshow(w0.reshape(sim_options['shape']))
 
 
 
-# norm = colors.Normalize(vmin = np.min(w0),
-#                             vmax = np.max(w0))
-norm = colors.SymLogNorm(0.01,  vmin = np.min(w0),
+norm = colors.Normalize(vmin = np.min(w0),
                             vmax = np.max(w0))
+# norm = colors.SymLogNorm(0.01,  vmin = np.min(w0),
+#                             vmax = np.max(w0))
 
 
 im.set_norm(norm)
@@ -198,16 +198,16 @@ def animation(frame):
     ww = -ww.reshape(sim_options['shape'])
     im.set_data(ww)
 
-    # norm = colors.Normalize(vmin = np.min(ww_n),
-    #                         vmax = np.max(ww_n))
-    norm = colors.SymLogNorm(0.01,  vmin = np.min(ww_n),
-                           vmax = np.max(ww_n))
+    norm = colors.Normalize(vmin = np.min(ww_n),
+                            vmax = np.max(ww_n))
+    # norm = colors.SymLogNorm(0.01,  vmin = np.min(ww_n),
+    #                        vmax = np.max(ww_n))
 
     im.set_norm(norm)
 
     Q.set_UVC(u.reshape(sim_options['shape'])[Qmesh],
             -v.reshape(sim_options['shape'])[Qmesh])
-    plot.set_xlim(0,)
+
     if t >= 30:
         a = open('../30s Werte.csv', 'a')
         a.write(str(sim_options['order']) + ",")
