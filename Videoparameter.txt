@@ -1,3 +1,5 @@
+w0 = '-5 * np.sin(3 * np.pi * XX)**3 * np.sin(3 * np.pi * YY) * np.exp(-(XX-0.6)**2 - (YY-0.7)**2)'
+
 CC_oR
 40x40
 CFL = 0.4
