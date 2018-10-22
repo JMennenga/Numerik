@@ -1,0 +1,48 @@
+CC_oR
+40x40
+CFL = 0.4
+
+CC_mR
+40x40
+kin_vis = 0.0005
+CFL = 0.2
+
+LDC
+50x50 o 5
+kin_vis = 0.0005
+CFL = 0.9
+
+Rohrströmung
+50x50 o 5
+kin_vis = 0.05
+CFL = 0.9
+
+Einspritzung
+40x80 o 5
+kin_vis = 0.0005
+CFL = 0.9
+
+Einspritzung
+40x80 o 5
+kin_vis = 0.005
+CFL = 0.9
+
+Einspritzung
+40x80 o 5
+kin_vis = 0.05
+CFL = 0.9
+
+Zylinderumströmung
+40x80 o 5
+kin_vis = 0.05
+CFL = 0.9
+
+Zylinderumströmung
+40x80 o 5
+kin_vis = 0.005
+CFL = 0.9
+
+Zylinderumströmung/Wirbelstrasse
+40x80 o 5
+kin_vis = 0.00005
+CFL = 0.9
