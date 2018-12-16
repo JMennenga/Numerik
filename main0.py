@@ -26,10 +26,10 @@ global Q
 sim_options = {
     'image': [],
     'timestep': 0,
-    'order': 19,
+    'order': 5,
     'text': '-5 * np.sin(1 * np.pi * XX) * np.sin(1 * np.pi * YY)',
     'l':   1,
-    'kin_vis': 0,  # stabilitätsprobleme bei O(h)^2 ~ O(kin_vis)
+    'kin_vis': 0.05,  # stabilitätsprobleme bei O(h)^2 ~ O(kin_vis)
     'CFL': 0.8,
     'inverted': True
 }

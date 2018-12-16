@@ -10,9 +10,7 @@ import matplotlib.colors as colors
 import matplotlib.animation as ani
 import matplotlib.gridspec as gridspec
 from tkinter import Tk, filedialog
-plt.rcParams['animation.ffmpeg_path'] = 'C:/Users/Marc/workspace/FFmpeg/bin/ffmpeg'
-# plt.rc('text', usetex=True)
-# plt.rc('font', family='serif')
+#plt.rcParams['animation.ffmpeg_path'] = 'C:/Users/Marc/workspace/FFmpeg/bin/ffmpeg'
 
 global sim_stop
 global sim_started
@@ -29,7 +27,7 @@ sim_options = {
 'order' : 5,
 'text' : '-5 * np.sin(3 * np.pi * XX)**3 * np.sin(3 * np.pi * YY) * np.exp(-(XX-0.6)**2 - (YY-0.7)**2)' ,
 'l':   1,
-'kin_vis' : 0.0005,  #stabilitätsprobleme bei O(h)^2 ~ O(kin_vis)
+'kin_vis' : 0,  #stabilitätsprobleme bei O(h)^2 ~ O(kin_vis)
 'CFL' : 0.8,
 'inverted' : True
 }
@@ -125,20 +123,20 @@ im.set_norm(norm)
 cbar = plt.colorbar(im)
 cbar.set_label('Wirbelstärke')
 
-# global Qmesh
-# Qmesh = np.ones(sim_options['shape'], dtype= bool)
-# for i in range(0,sim_options['shape'][0],2):
-#     Qmesh[i,:] = False
-# for i in range(0,sim_options['shape'][1],2):
-#     Qmesh[:,i] = False
-#
-# QXpos, QYpos = np.meshgrid(np.linspace(0,sim_options['shape'][1], int(sim_options['shape'][1]/2)),
-#                         np.linspace(0,sim_options['shape'][0], int(sim_options['shape'][0]/2)))
-# Q = plot.quiver(QXpos, QYpos,
-#     np.zeros(sim_options['shape'])[Qmesh],
-#     np.zeros(sim_options['shape'])[Qmesh])
+global Qmesh
+Qmesh = np.ones(sim_options['shape'], dtype= bool)
+for i in range(0,sim_options['shape'][0],2):
+    Qmesh[i,:] = False
+for i in range(0,sim_options['shape'][1],2):
+    Qmesh[:,i] = False
 
-# plot.quiverkey(Q, 0.95, -0.05, 1, 'u = 1', angle = 0, labelpos = 'E')
+QXpos, QYpos = np.meshgrid(np.linspace(0,sim_options['shape'][1], int(sim_options['shape'][1]/2)),
+                        np.linspace(0,sim_options['shape'][0], int(sim_options['shape'][0]/2)))
+Q = plot.quiver(QXpos, QYpos,
+    np.zeros(sim_options['shape'])[Qmesh],
+    np.zeros(sim_options['shape'])[Qmesh])
+
+plot.quiverkey(Q, 0.95, -0.05, 1, 'u = 1', angle = 0, labelpos = 'E')
 
 global histo_data
 
@@ -205,8 +203,8 @@ def animation(frame):
 
     im.set_norm(norm)
 
-    # Q.set_UVC(u.reshape(sim_options['shape'])[Qmesh],
-    #         -v.reshape(sim_options['shape'])[Qmesh])
+    Q.set_UVC(u.reshape(sim_options['shape'])[Qmesh],
+            -v.reshape(sim_options['shape'])[Qmesh])
 
     if t >= 30:
         a = open('../30s Werte.csv', 'a')
@@ -219,10 +217,12 @@ def animation(frame):
     return [histo_line,im]#,Q]
 
 anim = ani.FuncAnimation(window, animation, frames=threadread)
-# FFwriter = ani.FFMpegWriter(fps = 30)
+FFwriter = ani.FFMpegWriter(fps = 30)
 
-i = 0
 
+#Video-File-outputnames
+# i = 0
+#
 # os.mkdir('tmp')
 # os.chdir('tmp')
 #
@@ -230,12 +230,13 @@ i = 0
 #     anim.save('cc19_50_' + str(i).zfill(5) + '.mp4', writer = FFwriter)
 #     i += 1
 #
-# outputname = "CC50x50_1mR0005"
+# outputname = "test"
 #
 # os.system("(for %i in (*.mp4) do @echo file '%i') > mylist.txt")
 # os.system("ffmpeg -f concat -i mylist.txt -c copy " + str(outputname) + ".mp4")
 # os.system("move " + str(outputname) + ".mp4 ..")
 # os.chdir("..")
 # shutil.rmtree('tmp')
+
 plt.show()
 sim_Thread.join()

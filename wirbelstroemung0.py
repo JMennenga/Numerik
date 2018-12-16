@@ -263,18 +263,19 @@ class Wirbelstroemung:
                      )
         #f_matrix = sparse.lil_matrix((2500, 2500))
         spaltensum = f_matrix.sum(0).transpose()
-        # txt = open('eigs.txt', 'w')
-        # eigs = splinalg.eigs(f_matrix, k=1590, return_eigenvectors=False) \
-        #     * self.h * self.CFL/max(np.abs(np.append(u, v)))
+        
+        txt = open('eigs.txt', 'w')
+        eigs = splinalg.eigs(f_matrix, k=1590, return_eigenvectors=False) \
+            * self.h * self.CFL/max(np.abs(np.append(u, v)))
 
-        # print(eigs.shape)
-        # for eig_nr in range(0, eigs.shape[0]):
-        #     print(eigs[eig_nr])
-        #     txt.write(str(eigs[eig_nr]) + '\n')
-        #
-        # txt.write('\n\n')
-        # txt.flush()
-        # txt.close()
+        print(eigs.shape)
+        for eig_nr in range(0, eigs.shape[0]):
+            print(eigs[eig_nr])
+            txt.write(str(eigs[eig_nr]) + '\n')
+
+        txt.write('\n\n')
+        txt.flush()
+        txt.close()
 
         rhs = -((np.multiply(ax, self.D1w * (u * (w + ww_rand))))
                 + (np.multiply(np.logical_not(ax), self.D1o * (u * (w + ww_rand))))
